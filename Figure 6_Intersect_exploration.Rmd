@@ -1,0 +1,999 @@
+---
+title: "Intersect exploration"
+author: "Stephen Noell"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation
+library("patchwork")       # plots together
+library("viridis") #color package
+library("svglite") #for saving SVGs
+library("ggpubr") #for saving plots
+library("here")            # set the path to the folder 
+library("RColorBrewer")
+library("broom")
+library("vegan")
+library("rstatix")
+library("data.table")
+library(purrr)
+library(ggpubr)
+
+
+set.seed(57)
+```
+
+
+```{r colors}
+
+pal_barn <- RColorBrewer::brewer.pal(10, "Paired")
+pal_barn2 <- RColorBrewer::brewer.pal(11, "BrBG")
+pal_barnf <- c("black", pal_barn, pal_barn2, "#fa9fb5", "#bdbdbd")
+pal_barn3 <- RColorBrewer::brewer.pal(9, "Spectral")
+pal_barnf_c <- c("black", pal_barn, pal_barn2, pal_barn3, "#fa9fb5", "#bdbdbd")
+pal_pca <- RColorBrewer::brewer.pal(12, "Paired")
+pal_intersect <- c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677", "#b2df8a",
+                   "#33a02c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a",
+                   "black")
+pal_numsites <- c("#c7e9b4", "#41b6c4", "#225ea8", "#081d58")
+
+```
+
+
+```{r site intersect info}
+####################
+mag.int <- read.csv("mags_intersect.csv") %>%
+  select(-1)
+
+info_dedup <- read.csv("gtdb_checkm_abund_all4_dedup.csv")
+
+mag.int.full <- full_join(mag.int, info_dedup, by = "bin")
+
+#moving Mel bin 28 to only Melbourne due to low abundance at Rittmann
+mag.int.full[22, "Intersect"] <- "Melbourne"
+mag.int.full[22, "num_sites"] <- 1
+
+mag.int.full[mag.int.full == "Melbourne"] <- "1-Mel"
+mag.int.full[mag.int.full == "Rittmann"] <- "1-Ritt"
+mag.int.full[mag.int.full == "Erebus-WC"] <- "1-WC"
+mag.int.full[mag.int.full == "Erebus-TR"] <- "1-TR"
+mag.int.full[mag.int.full == "Erebus-TR..Erebus-WC"] <- "2-TR..WC"
+mag.int.full[mag.int.full == "Erebus-WC..Melbourne"] <- "2-WC..Mel"
+mag.int.full[mag.int.full == "Erebus-WC..Rittmann"] <- "2-WC..Ritt"
+mag.int.full[mag.int.full == "Erebus-TR..Rittmann"] <- "2-TR..Ritt"
+mag.int.full[mag.int.full == "Erebus-WC..Melbourne..Rittmann"] <- "3-WC..Mel..Ritt"
+mag.int.full[mag.int.full == "Erebus-TR..Erebus-WC..Rittmann"] <- "3-TR..WC..Ritt"
+mag.int.full[mag.int.full == "Melbourne"] <- "1-Mel"
+mag.int.full[mag.int.full == "Erebus-TR..Erebus-WC..Melbourne..Rittmann"] <- "4-All"
+
+
+########## PHYLUM
+mag.int.p.ph <- mag.int.full %>%
+  dplyr::group_by(., Intersect, Phylum) %>%
+  dplyr::summarise(., Phy_sum = sum(total_abundance_woRitt3M)) %>%
+  ungroup(.) %>%
+  dplyr::group_by(., Intersect) %>%
+  dplyr::mutate(., Abundance = Phy_sum / (sum(Phy_sum))) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  select(., -Phy_sum)
+
+mag.int.p.ph <- mag.int.p.ph %>%
+      mutate(Intersect2 = case_when(
+      Intersect == "1-TR" | Intersect == "1-Ritt" | 
+        Intersect == "2-TR..Ritt" ~ "Active only",
+      Intersect == "1-WC" | Intersect == "1-Mel" | 
+        Intersect == "2-WC..Mel" ~ "Passive only",
+      TRUE ~ "Both"))
+
+plot_phylum_int <- ggplot(mag.int.p.ph, aes(x = Intersect, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = pal_barnf) +
+  labs(x = "Sample", y = "Relative\nAbundance") +
+  theme(
+    strip.text.x = element_text(size = 11),
+    legend.title = element_blank(),
+    legend.text = element_text(size=10),
+    axis.text.x  = element_text(size=11, angle = 90),
+    axis.title.x = element_blank(),
+    axis.text.y  = element_text(size=11),
+    axis.title.y = element_text(size=11),
+    legend.position = "bottom",
+    legend.key.width = unit(0.4, "cm"),
+    legend.key.height=unit(0.4,"cm")) +
+  coord_cartesian(expand = FALSE) +
+  facet_grid(. ~ Intersect2, scales = "free")
+
+plot_phylum_int
+
+```
+
+
+```{r class plot}
+
+###########CLASS
+
+mag.int.p.cl <- mag.int.full %>%
+  dplyr::group_by(., Intersect, Class) %>%
+  dplyr::summarise(., Cl_sum = sum(total_abundance_woRitt3M)) %>%
+  ungroup(.) %>%
+  dplyr::group_by(., Intersect) %>%
+  dplyr::mutate(., Abundance = Cl_sum / (sum(Cl_sum))) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  select(., -Cl_sum)
+
+mag.int.p.cl <- mag.int.p.cl %>%
+      mutate(Intersect2 = case_when(
+      Intersect == "1-TR" | Intersect == "1-Ritt" | 
+        Intersect == "2-TR..Ritt" ~ "Active only",
+      Intersect == "1-WC" | Intersect == "1-Mel" | 
+        Intersect == "2-WC..Mel" ~ "Passive only",
+      TRUE ~ "Both"))
+
+mag.int.p.cl[mag.int.p.cl == ""] <- "Unassigned"
+
+plot_class_int <- ggplot(mag.int.p.cl, aes(x = Intersect, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = pal_barnf_c) +
+  labs(x = "Sample", y = "Relative\nAbundance") +
+  theme(
+    strip.text.x = element_text(size = 11),
+    legend.title = element_blank(),
+    legend.text = element_text(size=10),
+    axis.text.x  = element_text(size=11, angle = 90),
+    axis.title.x = element_blank(),
+    axis.text.y  = element_text(size=11),
+    axis.title.y = element_text(size=11),
+    legend.position = "bottom",
+    legend.key.width = unit(0.4, "cm"),
+    legend.key.height=unit(0.4,"cm")) +
+  coord_cartesian(expand = FALSE)  +
+  facet_grid(. ~ Intersect2, scales = "free")
+
+plot_class_int
+
+```
+
+
+
+```{r multi-site comparison}
+#genome characteristics
+mag.int.g0 <- mag.int.full %>%
+  select(bin, Site, Intersect, Genome.size, GC, Coding.density,
+         Completeness) %>%
+  mutate(Genome.size.mbp = Genome.size / 1E6) %>%
+  select(-Genome.size)
+
+#pred growth rate info
+mags.gr <- read.csv(file = "bin_growth_rates_all5.csv") %>%
+  select(-1)
+
+mag.int.g1 <- inner_join(mag.int.g0, mags.gr) %>%
+  select(-gr_CI_low, -gr_CI_up)
+
+
+#pred ogt info
+mags.ogt <- read.csv(file = "tome_all5.csv") %>%
+  select(-Site)
+
+mag.int.g2 <- inner_join(mag.int.g1, mags.ogt, by = "bin")
+
+#number of unique pfam domains info
+pfam <- read.csv("pfam_all.csv") %>%
+  dplyr::filter(type == "Domain") %>%
+  dplyr::group_by(bin) %>%
+  dplyr::summarise(count = n_distinct(hmm_acc)) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+  
+mag.int.g <- inner_join(mag.int.g2, pfam, by = "bin") %>%
+  dplyr::rename("pfam" = "count")
+
+
+######## Categorize site intersections by site category
+mag.int.g[mag.int.g == "Melbourne"] <- "1-Mel"
+mag.int.g[mag.int.g == "Rittmann"] <- "1-Ritt"
+mag.int.g[mag.int.g == "Erebus-WC"] <- "1-WC"
+mag.int.g[mag.int.g == "Erebus-TR"] <- "1-TR"
+mag.int.g[mag.int.g == "Erebus-TR..Erebus-WC"] <- "2-TR..WC"
+mag.int.g[mag.int.g == "Erebus-WC..Melbourne"] <- "2-WC..Mel"
+mag.int.g[mag.int.g == "Erebus-WC..Rittmann"] <- "2-WC..Ritt"
+mag.int.g[mag.int.g == "Erebus-TR..Rittmann"] <- "2-TR..Ritt"
+mag.int.g[mag.int.g == "Erebus-WC..Melbourne..Rittmann"] <- "3-WC..Mel..Ritt"
+mag.int.g[mag.int.g == "Erebus-TR..Erebus-WC..Rittmann"] <- "3-TR..WC..Ritt"
+mag.int.g[mag.int.g == "Melbourne"] <- "1-Mel"
+mag.int.g[mag.int.g == "Erebus-TR..Erebus-WC..Melbourne..Rittmann"] <- "4-All"
+
+######## Categorize site intersections by site category
+
+mag.int.g3.bin <- mag.int.g %>%
+      mutate(Intersect2 = case_when(
+      Intersect == "1-TR" | Intersect == "1-Ritt" | 
+        Intersect == "2-TR..Ritt" ~ "Active only",
+      Intersect == "1-WC" | Intersect == "1-Mel" | 
+        Intersect == "2-WC..Mel" ~ "Passive only",
+      TRUE ~ "Both"))%>%
+  select(-Site) 
+
+mag.int.g3 <- mag.int.g3.bin %>% select(-bin)
+
+my_comparisons <- compare_means(predOGT ~ Intersect, data = mag.int.g3)
+
+mag.int.g4 <- mag.int.g3 %>%
+  reshape2::melt(.) %>%
+  dplyr::rename(., chars = "variable")
+
+int2.gchar <- ggplot(mag.int.g4, aes(x = Intersect, y = value, color = Intersect)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_intersect,
+                      name = "Intersect") +
+   facet_grid(chars ~ Intersect2, scales = "free") +
+  theme(
+    text = element_text(size=12),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    strip.background = element_blank()) #+
+  #ggpubr::stat_anova_test(method = "one_way",label.x.npc = "centre", label.y.npc = "middle")
+
+int2.gchar
+
+compare <- mag.int.g4 %>%
+  dplyr::filter(chars == "pfam") %>%
+  compare_means(value ~ Intersect, data = .)
+
+#None significant except OGT for Both and Passive only and pfam domain for passive only
+#for pfam domain, WC+Mel have more than WC only
+```
+
+
+
+```{r functional comparison}
+# Do we see trends in the number of potential metabolic pathways that MAGs can use and the number of sites they're present at?
+# Using Huw's METABOLIC output
+
+metab <- read.csv("metabolic_output_all_v2.csv")
+metab2 <- metab %>% 
+  dplyr::select(-Gene.abbreviation, -Gene.name,
+                                  -Hmm.file, -Corresponding.KO,
+                                  -Reaction, -Substrate, -Product,
+                                  -Hmm.detecting.threshold, -Cat_Path)
+cat_path <- metab %>%
+  dplyr::select(Category, Cat_Path) %>%
+  distinct(.)
+
+metab_t <- transpose(metab2)
+rownames(metab_t) <- colnames(metab2)
+
+metab_t2 <- metab_t %>% rownames_to_column(var = "bin")
+metab_t2$bin <- gsub("Erebus.", "Erebus-", metab_t2$bin)
+
+metab_func <- metab_t2 %>% dplyr::filter(bin == "Category")
+mag.int.g3.bin.o <- mag.int.g3.bin %>% dplyr::select(bin)
+
+
+metab_t3 <- metab_t2 %>%
+  inner_join(mag.int.g3.bin.o, ., by = "bin")
+
+metab_t4 <- rbind(metab_t3, metab_func) %>%
+  column_to_rownames(var = "bin")
+
+metab_t5 <-  transpose(metab_t4)
+
+colnames(metab_t5) <- rownames(metab_t4)
+
+metab_t6 <- metab_t5 %>%
+  dplyr::group_by(Category) %>%
+  mutate_all(as.numeric) %>%
+  dplyr::summarise_all(mean) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+
+metab_t7 <- inner_join(metab_t6, cat_path, by = "Category") %>%
+  column_to_rownames(var = "Category")
+
+```
+
+
+```{r}
+
+metab_cat <- metab_t7 %>%
+  dplyr::filter(Cat_Path == "Category") %>%
+  dplyr::select(-Cat_Path)
+
+metab_path <- metab_t7 %>%
+  dplyr::filter(Cat_Path == "Pathway") %>%
+  dplyr::select(-Cat_Path)
+
+#pathway must have 50% to be present
+metab_path[metab_path < 0.5] = 0
+metab_path[metab_path >= 0.5] = 1
+
+#category must have greater than 0 to be present
+metab_cat[metab_cat > 0] = 1
+
+metab_both <- rbind(metab_path, metab_cat)
+
+metab_both.1 <- metab_both %>%
+  summarise_all(sum) 
+
+metab_both.2 <- transpose(metab_both.1)
+
+metab_both.3 <- metab_both.2 %>%
+  mutate_all(as.numeric) %>%
+  dplyr::rename(metabolic_path = 1)
+
+rownames(metab_both.3) <- colnames(metab_both.1)
+metab_both.4 <- metab_both.3 %>% rownames_to_column(var = "bin")
+
+metab_both.5 <- inner_join(mag.int.g3.bin, metab_both.4, by = "bin") %>%
+  dplyr::mutate(metabolic_path2 = (metabolic_path / Completeness)*100)
+
+metab_both.6 <- metab_both.5 %>%
+  reshape2::melt(.) %>%
+  dplyr::rename(., chars = "variable")
+
+metab_both.7 <- metab_both.6 %>%
+  dplyr::filter(chars == "metabolic_path2")
+
+```
+
+
+```{r plot}
+int3.gchar <- ggplot(metab_both.6, aes(x = Intersect, y = value, color = Intersect)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_intersect,
+                      name = "Intersect") +
+   facet_grid(chars ~ Intersect2) +
+  theme(
+    text = element_text(size=12),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    strip.background = element_blank()) +
+  ggpubr::stat_anova_test(method = "one_way",
+                          label.x.npc = "left", label.y.npc = "bottom")
+
+int3.gchar
+
+```
+
+```{r}
+#do statistical test to look for significant differences between site categories
+
+test <- metab_both.6 %>%
+  dplyr::group_by(chars) %>%
+  do(k = kruskal.test(value~Intersect, data=.)) %>%
+  dplyr::summarise(chars, kruskal = k$p.value)
+
+test
+
+#OGT, genome size, and pfam are significant. Explore!
+
+wil.1 <- metab_both.6 %>%
+  mutate(rn = rowid(chars)) %>%
+  pivot_wider(names_from = chars, values_from = value) %>%
+  dplyr::select(-rn) %>%
+  as.data.frame(.)
+
+wil.1$Intersect <- as.factor(wil.1$Intersect)
+
+gr <- levels(wil.1$Intersect)
+
+ogt <- matrix(NA, nrow= length(gr), ncol = length(gr), dimnames = list(gr,gr))
+
+for (i in 1:ncol(ogt)){
+  for (j in 1:nrow(ogt)){
+    x<- wilcox.test(wil.1$predOGT[wil.1$Intersect == gr[i]], wil.1$predOGT[wil.1$Intersect == gr[j]])
+    ogt[i,j] <- x$p.value
+  }
+}
+
+ogt2 <- ogt %>% as.data.frame(.)
+
+ogt3 <- ogt2 %>%
+  dplyr::mutate_all(function(x) p.adjust(x, method = "BH", n = length(x)))
+
+#write.csv(ogt3, file = "ogt.csv")
+
+###genome size
+gsz <- matrix(NA, nrow= length(gr), ncol = length(gr), dimnames = list(gr,gr))
+
+for (i in 1:ncol(gsz)){
+  for (j in 1:nrow(gsz)){
+    x<- wilcox.test(wil.1$Genome.size.mbp[wil.1$Intersect == gr[i]], wil.1$Genome.size.mbp[wil.1$Intersect == gr[j]])
+    gsz[i,j] <- x$p.value
+  }
+}
+
+gsz2 <- gsz %>% as.data.frame(.)
+
+gsz3 <- gsz2 %>%
+  dplyr::mutate_all(function(x) p.adjust(x, method = "BH", n = length(x)))
+
+#write.csv(gsz3, file = "gsz.csv")
+
+#######pfam domains
+pf <- matrix(NA, nrow= length(gr), ncol = length(gr), dimnames = list(gr,gr))
+
+for (i in 1:ncol(pf)){
+  for (j in 1:nrow(pf)){
+    x<- wilcox.test(wil.1$pfam[wil.1$Intersect == gr[i]], wil.1$pfam[wil.1$Intersect == gr[j]])
+    pf[i,j] <- x$p.value
+  }
+}
+
+pf2 <- pf %>% as.data.frame(.)
+
+pf3 <- pf2 %>%
+  dplyr::mutate_all(function(x) p.adjust(x, method = "BH", n = length(x)))
+
+#write.csv(pf3, file = "pf.csv")
+
+#metabolic pathways
+mp <- matrix(NA, nrow= length(gr), ncol = length(gr), dimnames = list(gr,gr))
+
+for (i in 1:ncol(mp)){
+  for (j in 1:nrow(mp)){
+    x<- wilcox.test(wil.1$metabolic_path2[wil.1$Intersect == gr[i]], wil.1$metabolic_path2[wil.1$Intersect == gr[j]])
+    mp[i,j] <- x$p.value
+  }
+}
+
+mp2 <- mp %>% as.data.frame(.)
+
+mp3 <- mp2 %>%
+  dplyr::mutate_all(function(x) p.adjust(x, method = "BH", n = length(x)))
+
+#write.csv(mp3, file = "mp.csv")
+```
+
+
+```{r num sites only}
+
+##########Look at just number of sites?
+mag.numsites.g0 <- mag.int.full %>%
+  select(bin, Site, num_sites, Genome.size, GC, Coding.density,
+         Completeness) %>%
+  mutate(Genome.size.mbp = Genome.size / 1E6) %>%
+  select(-Genome.size) 
+
+mag.numsites.g0$num_sites <- as.factor(mag.numsites.g0$num_sites)
+
+mag.numsites.g1 <- inner_join(mag.numsites.g0, mags.gr) %>%
+  select(-gr_CI_low, -gr_CI_up)
+
+mag.numsites.g2 <- inner_join(mag.numsites.g1, mags.ogt)
+
+mag.numsites.g3 <- inner_join(mag.numsites.g2, pfam, by = "bin") %>%
+  dplyr::rename("pfam" = "count")
+
+metab_both.8 <- metab_both.7 %>%
+  dplyr::select(bin, value) %>%
+  dplyr::rename("metabolic_path2" = "value")
+
+mag.numsites.g4 <- inner_join(mag.numsites.g3, metab_both.8, by = "bin")
+
+mag.numsites.g5 <- reshape2::melt(mag.numsites.g4)
+
+numsites.gen <- ggplot(mag.numsites.g5, aes(x = num_sites, y = value, 
+                                            color = num_sites)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_numsites,
+                      name = "Num. Sites") +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding density (%)", 
+                                      Genome.size.mbp = "Genome size (Mbp)",
+                                      growth_rate = "Growth rate (d)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)",
+                                      pfam = "Unique\npfam domains",
+                                      metabolic_path2 = "Unique\nmetabolic pathways"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=12),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside"
+  ) +
+  ggpubr::stat_anova_test(method = "one_way",
+                          label.x.npc = "left", label.y.npc = "bottom")
+
+numsites.gen
+
+# novel Thaumarchaeota has the smallest genome, fewest unique pfam domains of any MAGs...yet is present at all 4 sites!
+
+```
+
+```{r}
+#which metabolic pathway site categories are different?
+wil.s0 <- mag.numsites.g5 %>%
+  dplyr::filter(variable == "metabolic_path2")
+
+wil.s0$num_sites <- as.factor(wil.s0$num_sites)
+
+gr <- levels(wil.s0$num_sites)
+mp <- matrix(NA, nrow= length(gr), ncol = length(gr), dimnames = list(gr,gr))
+
+for (i in 1:ncol(mp)){
+  for (j in 1:nrow(mp)){
+    x<- wilcox.test(wil.s0$value[wil.s0$num_sites == gr[i]], 
+                    wil.s0$value[wil.s0$num_sites == gr[j]])
+    mp[i,j] <- x$p.value
+  }
+}
+
+mp2 <- mp %>% as.data.frame(.)
+
+mp3 <- mp2 %>%
+  dplyr::mutate_all(function(x) p.adjust(x, method = "BH", n = length(x)))
+mp3
+
+#3>1; p=0.03
+
+#which pfam domain site categories are different?
+wil.p0 <- mag.numsites.g5 %>%
+  dplyr::filter(variable == "pfam")
+
+wil.p0$num_sites <- as.factor(wil.p0$num_sites)
+
+gr <- levels(wil.p0$num_sites)
+mp <- matrix(NA, nrow= length(gr), ncol = length(gr), dimnames = list(gr,gr))
+
+for (i in 1:ncol(mp)){
+  for (j in 1:nrow(mp)){
+    x<- wilcox.test(wil.p0$value[wil.p0$num_sites == gr[i]], 
+                    wil.p0$value[wil.p0$num_sites == gr[j]])
+    mp[i,j] <- x$p.value
+  }
+}
+
+mp2 <- mp %>% as.data.frame(.)
+
+mp3 <- mp2 %>%
+  dplyr::mutate_all(function(x) p.adjust(x, method = "BH", n = length(x)))
+mp3
+ # none significant after correction
+
+```
+
+```{r final intersect}
+mag.int.gfin <- metab_both.6 %>%
+  dplyr::filter(chars == "metabolic_path2" | chars == "predOGT" |
+                  chars == "pfam" | chars == "Genome.size.mbp")
+
+int3.gchar.f <- ggplot(mag.int.gfin, aes(x = Intersect, y = value, color = Intersect)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_intersect) +
+   facet_grid(chars ~ Intersect2, scales = "free",
+              labeller = as_labeller(c(Genome.size.mbp = "Genome\nsize (Mbp)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)",
+                                      pfam = "Unique\npfam domains",
+                                      metabolic_path2 = "Metabolic\npathways/categories",
+                                      `Active only` = "Active only",
+                                      `Passive only` = "Passive only",
+                                      `Both` = "Both"))) +
+  theme(
+    text = element_text(size=10),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    strip.background = element_blank(),
+    legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(angle = 90))
+
+int3.gchar.f
+
+mag.numsites.gfin <- mag.numsites.g5 %>%
+  dplyr::filter(variable == "metabolic_path2" | variable == "predOGT" |
+                  variable == "pfam" | variable == "Genome.size.mbp")
+
+numsites.gen.f <- ggplot(mag.numsites.gfin, aes(x = num_sites, y = value, 
+                                            color = num_sites)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_numsites) +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "right",
+             labeller = as_labeller(c(Genome.size.mbp = "Genome\nsize (Mbp)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)",
+                                      pfam = "Unique\npfam domains",
+                                      metabolic_path2 = "Metabolic\npathways/categories"))) +
+  ylab(NULL) +
+  xlab("Site Occupancy") +
+  theme(
+    text = element_text(size=10),
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    legend.position = "none"
+  ) #+
+  #ggpubr::stat_anova_test(method = "one_way",
+   #                       label.x.npc = "left", label.y.npc = "bottom")
+
+numsites.gen.f
+
+fin_good <- ggarrange(numsites.gen.f, int3.gchar.f,
+                      labels = c("A", "B"),
+                      nrow = 1,
+                      ncol = 2,
+                      widths = c(0.7, 1))
+fin_good
+```
+
+
+
+```{r}
+#non-significant other ones
+mag.int.goth <- metab_both.6 %>%
+  dplyr::filter(chars == "GC" | chars == "Coding.density" |
+                  chars == "growth_rate")
+
+int3.gchar.o <- ggplot(mag.int.goth, aes(x = Intersect, y = value, color = Intersect)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_intersect,
+                      name = "Intersect") +
+   facet_grid(chars ~ Intersect2, scales = "free",
+              labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding\ndensity (%)", 
+                                      growth_rate = "Growth\nrate (d)",
+                                      `Active only` = "Active only",
+                                      `Passive only` = "Passive only",
+                                      `Both` = "Both"))) +
+  theme(
+    text = element_text(size=12),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "none",
+    strip.background = element_blank()) +
+  scale_x_discrete(guide = guide_axis(angle = 90))
+
+int3.gchar.o
+
+mag.numsites.goth <- mag.numsites.g5 %>%
+  dplyr::filter(variable == "GC" | variable == "Coding.density" |
+                  variable == "growth_rate")
+
+numsites.gen.o <- ggplot(mag.numsites.goth, aes(x = num_sites, y = value, 
+                                            color = num_sites)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=pal_numsites,
+                      name = "Num. Sites") +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "right",
+             nrow = 2, ncol = 2,
+             labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding\ndensity (%)", 
+                                      growth_rate = "Growth\nrate (d)"))) +
+  ylab(NULL) +
+  xlab("Site Occupancy") +
+  theme(
+    text = element_text(size=12),
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    legend.position = "none"
+  ) #+
+  #ggpubr::stat_anova_test(method = "one_way",
+   #                       label.x.npc = "left", label.y.npc = "bottom",
+    #                      size = 3)
+
+numsites.gen.o
+
+oth_other <- ggarrange(numsites.gen.o, int3.gchar.o,
+                      labels = c("A", "B"),
+                      nrow = 1,
+                      ncol = 2,
+                      widths = c(0.7, 1),
+                      label.y = 0.1)
+oth_other
+```
+
+```{r heatmap METABOLIC MAGs Intersect}
+
+mag_inters3 <- read.csv("mags_intersect_v3.csv")
+
+### Specialized Category
+
+metab_new <- read.csv("metabolic_output_all_v2.csv")
+metab_new2 <- metab_new %>% 
+  dplyr::select(-Gene.abbreviation, -Gene.name,
+                                  -Hmm.file, -Corresponding.KO,
+                                  -Reaction, -Substrate, -Product,
+                                  -Hmm.detecting.threshold,
+                -Cat_Path)
+  
+metab_s <- transpose(metab_new2)
+rownames(metab_s) <- colnames(metab_new2)
+
+metab_s2 <- metab_s %>% rownames_to_column(var = "bin")
+metab_s2$bin <- gsub("Erebus.", "Erebus-", metab_s2$bin)
+
+metab_func <- metab_s2 %>% dplyr::filter(bin == "Category")
+mag.int.g3.bin.o <- mag.int.g3.bin %>% dplyr::select(bin)
+
+
+metab_s3 <- metab_s2 %>%
+  inner_join(mag.int.g3.bin.o, ., by = "bin")
+
+metab_s4 <- rbind(metab_s3, metab_func) %>%
+  column_to_rownames(var = "bin")
+
+metab_s5 <-  transpose(metab_s4)
+
+colnames(metab_s5) <- rownames(metab_s4)
+
+metab_s6 <- metab_s5 %>%
+  dplyr::group_by(Category) %>%
+  mutate_all(as.numeric) %>%
+  dplyr::summarise_all(mean) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  column_to_rownames(var = "Category")
+
+
+metab_s7 <- metab_s6 %>%
+  transpose(.)
+
+rownames(metab_s7) <- colnames(metab_s6)
+colnames(metab_s7) <- rownames(metab_s6)
+
+metab_s8 <- metab_s7 %>%
+  rownames_to_column(var = "bin") %>%
+  inner_join(., mag_inters3, by = "bin") 
+
+metab_s8.m <- reshape2::melt(metab_s8) %>%
+  dplyr::rename("Category" = "variable")
+
+metab_s8.m1 <- full_join(metab_s8.m, cat_path, by = "Category")
+
+tax <- mag.int.full %>%
+  dplyr::select(bin, Phylum, Class)
+
+metab_s8.m1.5 <- full_join(metab_s8.m1, tax, by = "bin")
+
+metab_s8.m2 <- metab_s8.m1.5 %>%
+  dplyr::mutate(bin2 = paste(Intersect, Phylum,
+                             Class, bin, sep = ".."))
+
+###################Separate into Pathway or Category
+
+metab_cat.2 <- metab_s8.m2 %>%
+  dplyr::filter(Cat_Path == "Category")
+
+metab_path.2 <- metab_s8.m2 %>%
+  dplyr::filter(Cat_Path == "Pathway")
+
+# Change Category to >0 = 1
+metab_cat.2$value[metab_cat.2$value > 0] = 1
+metab_cat.2$value <- as.logical(metab_cat.2$value)
+
+#separate heatmaps for both
+heat_intersect_cat <- ggplot(metab_cat.2, aes(bin2, Category, fill=value)) +
+  geom_tile(color = "white") +
+  theme_bw() +
+  scale_fill_manual('Any present?', values = c("#eff3ff", "#084594")) +
+  labs(y = "Category") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.title.y = element_text(size=9),
+    axis.ticks.x = element_blank(),
+    axis.text.y  = element_text(size=9),
+    strip.text.x = element_text(size = 10),
+    legend.text = element_text(size=8),
+    legend.title = element_text(size=10),
+    legend.position = "top") +
+  scale_x_discrete(guide = guide_axis(angle = -90)) +
+  facet_grid(.~factor(Intersect2), scales = "free",
+             space='free')
+
+heat_intersect_cat
+
+#pathways
+heat_intersect_pat <- ggplot(metab_path.2, aes(bin2, Category, fill=value)) +
+  geom_tile(color = "white") +
+  theme_bw() +
+  scale_fill_distiller('% pathway\npresent', palette = "Reds", direction = 1) +
+  labs(y = "Pathway") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_text(size=6),
+    axis.title.y = element_text(size=9),
+    axis.text.y  = element_text(size=9),
+    strip.text.x = element_blank(),
+    strip.background = element_blank(),
+    legend.text = element_text(size=8),
+    legend.title = element_text(size=10),
+    legend.position = c(0, 0), 
+    legend.justification = c(1.05, 3),
+    legend.direction = "horizontal") +
+  scale_x_discrete(guide = guide_axis(angle = -90)) +
+  facet_grid(.~factor(Intersect2), scales = "free",
+             space='free')
+
+heat_intersect_pat
+
+#join together
+pp <- list(heat_intersect_cat, NULL, heat_intersect_pat)
+heat_intersect <- cowplot::plot_grid(plotlist=pp, 
+                                     rel_heights = c(0.6, 0, 1),
+                                     align='hv',
+                                     ncol = 1)
+
+heat_intersect
+```
+
+
+
+```{r heatmap site number}
+mag.numsites.on <- mag.numsites.g0 %>% dplyr::select(bin, num_sites)
+
+metab_numst <- full_join(metab_s8.m2, mag.numsites.on, by = "bin")
+
+###################Separate into Pathway or Category
+
+metab_cat.3 <- metab_numst %>%
+  dplyr::filter(Cat_Path == "Category")
+
+metab_path.3 <- metab_numst %>%
+  dplyr::filter(Cat_Path == "Pathway")
+
+# Change Category to >0 = 1
+metab_cat.3$value[metab_cat.3$value > 0] = 1
+metab_cat.3$value <- as.logical(metab_cat.3$value)
+
+#separate heatmaps for both
+heat_num_sites_cat <- ggplot(metab_cat.3, aes(bin2, Category, fill=value)) +
+  geom_tile(color = "white") +
+  theme_bw() +
+  scale_fill_manual('Any present?', values = c("#eff3ff", "#084594")) +
+  labs(y = "Category") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.title.y = element_text(size=9),
+    axis.ticks.x = element_blank(),
+    axis.text.y  = element_text(size=9),
+    strip.text.x = element_text(size = 10),
+    legend.text = element_text(size=8),
+    legend.title = element_text(size=10),
+    legend.position = "top") +
+  scale_x_discrete(guide = guide_axis(angle = -90)) +
+  facet_grid(.~factor(num_sites), scales = "free",
+             space='free')
+
+heat_num_sites_cat
+
+#pathways
+heat_num_sites_pat <- ggplot(metab_path.3, aes(bin2, Category, fill=value)) +
+  geom_tile(color = "white") +
+  theme_bw() +
+  scale_fill_distiller('% pathway\npresent', palette = "Reds", direction = 1) +
+  labs(y = "Pathway") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_text(size=6),
+    axis.title.y = element_text(size=9),
+    axis.text.y  = element_text(size=9),
+    strip.text.x = element_blank(),
+    strip.background = element_blank(),
+    legend.text = element_text(size=8),
+    legend.title = element_text(size=10),
+    legend.position = c(0, 0), 
+    legend.justification = c(1.05, 3),
+    legend.direction = "horizontal") +
+  scale_x_discrete(guide = guide_axis(angle = -90)) +
+  facet_grid(.~factor(num_sites), scales = "free",
+             space='free')
+
+heat_num_sites_pat
+
+###Boxplot test
+my_comparisons <- list( c("1", "2"), c("1", "3"), c("1", "4"), 
+                        c("2", "3"), c("2", "4"), 
+                        c("3", "4") )
+
+box_pat <- ggplot2::ggplot(metab_path.3, aes(x = num_sites, y = value)) +
+  geom_boxplot() + 
+  theme_bw() +
+  facet_wrap(. ~ Category) +
+  stat_kruskal_test(label.y = 0.20) 
+  #stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  #stat_compare_means(label.y = 50)
+
+box_pat
+
+#join together
+pp <- list(heat_num_sites_cat, NULL, heat_num_sites_pat)
+heat_num_sites <- cowplot::plot_grid(plotlist=pp, 
+                                     rel_heights = c(0.55, 0, 1),
+                                     align='hv',
+                                     ncol = 1)
+
+heat_num_sites
+```
+
+```{r final plot}
+final <- ggarrange(fin_good,
+                   heat_num_sites,
+                   labels = c("", "C"),
+                   nrow = 2,
+                   ncol = 1,
+                   heights = c(0.55, 1)
+                   )
+
+final
+
+#ggsave("Genome_char_intersect.svg", final, width = 250, height = 360, units = "mm",dpi = 300)
+
+
+```
+
+
+```{r supp figure}
+sup_fig <- ggarrange(oth_other,
+                     heat_intersect,
+                   labels = c("", "C"),
+                   nrow = 2,
+                   ncol = 1,
+                   heights = c(0.55, 1))
+
+sup_fig
+
+#ggsave("Genome_char_intersect_other.svg", sup_fig, width = 250, height = 360, units = "mm",dpi = 300)
+
+#mag.int.g.write <- mag.int.g3 %>%
+ # select(bin, Site, Intersect, Intersect2)
+
+#write.csv(mag.int.g.write, file = "mags_intersect_v2.csv")
+
+```
+
+```{r}
+#suplemental table
+metab_new0 <- read.csv("metabolic_output_all_v3.csv")
+
+metab_new3 <- metab_new0 %>%
+  dplyr::select(-Gene.abbreviation, -Gene.name,
+                                  -Hmm.file, -Corresponding.KO,
+                                  -Reaction, -Substrate, -Product,
+                                  -Hmm.detecting.threshold,
+                -Cat_Path, -Category) %>%
+  subset(., select = endsWith(names(.), "Hit.numbers"))
+
+metab_new4 <- metab_new %>%
+  dplyr::select(Cat_Path, Category, Gene.abbreviation, Gene.name,
+                                  Hmm.file, Corresponding.KO,
+                                  Reaction, Substrate, Product,
+                                  Hmm.detecting.threshold)
+
+metab_new5 <- cbind(metab_new4, metab_new3)
+
+#write.csv(metab_new5, file = "Table S3.csv")
+```
