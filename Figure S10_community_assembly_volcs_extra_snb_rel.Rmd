@@ -1,0 +1,381 @@
+---
+title: "SNB calculation prep, analysis"
+author: "Stephen Noell"
+date: "23/05/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation
+library("here")            # set the path to the folder
+library("ggplot2")
+library("ggpubr") #for putting figs together
+library("RColorBrewer") #for color palettes
+library("svglite") #for saving SVGs
+library("reshape2")
+library("dplyr")
+library("phyloseq")
+
+
+set.seed(57)
+```
+
+```{r species}
+table1s <- read_csv("table_snb_species.csv") %>% as.data.frame(.)
+
+table2s <- table1s %>%
+  dplyr::group_by(`taxonomic lineage`) %>%
+  summarise_at(dplyr::vars(-1), funs(sum)) %>%
+  as.data.frame(.)
+
+write.csv(table2s, file = "table_snb_species_f.csv")
+
+```
+
+```{r genus}
+table1g <- read_csv("table_snb_genus.csv") %>% as.data.frame(.)
+
+table2g <- table1g %>%
+  dplyr::group_by(`taxonomic lineage`) %>%
+  summarise_at(dplyr::vars(-1), funs(sum)) %>%
+  as.data.frame(.)
+
+write.csv(table2g, file = "table_snb_genus_f.csv")
+
+```
+
+```{r family}
+table1f <- read_csv("table_snb_fam.csv") %>% as.data.frame(.)
+
+table2f <- table1f %>%
+  dplyr::group_by(`taxonomic lineage`) %>%
+  summarise_at(dplyr::vars(-1), funs(sum)) %>%
+  as.data.frame(.)
+
+write.csv(table2f, file = "table_snb_fam_f.csv")
+
+```
+
+```{r order}
+table1o <- read_csv("table_snb_order.csv") %>% as.data.frame(.)
+
+table2o <- table1o %>%
+  dplyr::group_by(`taxonomic lineage`) %>%
+  summarise_at(dplyr::vars(-1), funs(sum)) %>%
+  as.data.frame(.)
+
+write.csv(table2o, file = "table_snb_order_f.csv")
+```
+
+```{r class}
+table1c <- read_csv("table_snb_class.csv") %>% as.data.frame(.)
+
+table2c <- table1c %>%
+  dplyr::group_by(`taxonomic lineage`) %>%
+  summarise_at(dplyr::vars(-1), funs(sum)) %>%
+  as.data.frame(.)
+
+write.csv(table2c, file = "table_snb_class_f.csv")
+```
+
+```{r phylum}
+table1p <- read_csv("table_snb_phylum.csv") %>% as.data.frame(.)
+
+table2p <- table1p %>%
+  dplyr::group_by(`taxonomic lineage`) %>%
+  summarise_at(dplyr::vars(-1), funs(sum)) %>%
+  as.data.frame(.)
+
+write.csv(table2p, file = "table_snb_phylum_f.csv")
+```
+
+
+```{r analysis}
+#species failed
+outg <- read.table(file = 'snb_genus_out.txt', sep = '\t', header = TRUE)
+outg$rank <- "5. Genus"
+
+outf <- read.table(file = 'snb_fam_out.txt', sep = '\t', header = TRUE)
+outf$rank <- "4. Family"
+
+outo <- read.table(file = 'snb_order_out.txt', sep = '\t', header = TRUE)
+outo$rank <- "3. Order"
+
+outc <- read.table(file = 'snb_class_out.txt', sep = '\t', header = TRUE)
+outc$rank <- "2. Class"
+
+outp <- read.table(file = 'snb_phylum_out.txt', sep = '\t', header = TRUE)
+outp$rank <- "1. Phylum"
+
+out_all <- rbind(outg, outf, outo, outc, outp) %>%
+  dplyr::filter(SNB.score != "NaN") %>%
+  select(SNB.score, rank)
+
+out_med <- out_all %>%
+  dplyr::group_by(rank) %>%
+  summarise_at(dplyr::vars(1), funs(median))
+
+out_med
+
+out_plot <- ggplot(out_all, aes(x = SNB.score)) +
+  geom_histogram(binwidth = 0.008,
+                 fill = "#cccccc") +
+  geom_text(data = out_med, aes(label = round(out_med$SNB.score, 2), 
+                                y = out_med$SNB.score + 2), size = 3.5) +
+  theme_bw() +
+  labs(x = "SNB score",
+       y = "Count") +
+  theme(
+    axis.title.x = element_text(size=10),
+    axis.text.x  = element_text(size=8),
+    axis.title.y = element_text(size=10),
+    axis.text.y  = element_text(size=8),
+    strip.background = element_blank(),
+    strip.text = element_text(size=10),
+    panel.grid = element_blank()
+  ) +
+  facet_wrap(~ rank, nrow = 5, ncol = 1,
+             scales = "free_y")
+
+out_plot
+
+
+###########
+out_z <- out_all %>%
+  dplyr::group_by(rank) %>%
+  dplyr::mutate(z = ((SNB.score - median(SNB.score)) / sd(SNB.score))/1.4826) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+
+out_plot_z <- ggplot(out_z, aes(x = z)) +
+  geom_histogram(fill = "#cccccc") +
+  theme_bw() +
+  labs(x = "Modified z-score SNB",
+       y = "Count") +
+  theme(
+    axis.title.x = element_text(size=10),
+    axis.text.x  = element_text(size=8),
+    axis.title.y = element_text(size=10),
+    axis.text.y  = element_text(size=8),
+    strip.background = element_blank(),
+    strip.text = element_text(size=10),
+    panel.grid = element_blank()
+  ) +
+  facet_wrap(~ rank, nrow = 5, ncol = 1,
+             scales = "free_y")
+
+out_plot_z
+
+```
+
+```{r}
+out_all2 <- rbind(outg, outf, outo, outc, outp) %>%
+  dplyr::filter(SNB.score != "NaN")
+
+ab_snb <- ggplot(out_all2, aes(y = mean.relative.abundance, x = SNB.score)) +
+  geom_point() +
+  theme_bw() +
+   facet_wrap(~ rank, nrow = 5, ncol = 1,
+             scales = "free_y")
+
+ab_snb
+```
+
+```{r relative niche breadth}
+# using relative habitat breadth like in Chen 2021
+# calculate SI bias for order, family, and genera
+
+volcsf.rel <- readRDS("physeq.volcs.rel")
+
+#remove low abundance ASVs from abundant_common analysis
+oth <- read.csv("over_threshold_asvs.csv")
+
+tt <- data.frame(tax_table(volcsf.rel)) %>%
+  rownames_to_column(var = "ASV") %>%
+  right_join(oth, tt, by = "ASV")
+  
+#for including NA as a separate order; alternate: remove all NA, then use total individuals in taxa of 1 (=2)
+####ORDER
+bias_o_na <- tt %>%
+  dplyr::filter(., is.na(Order))
+
+bias_o_na$bias_o <- 2
+
+bias_o_v2 <- tt %>%
+  dplyr::filter(., !is.na(Order)) %>%
+  dplyr::group_by(Order) %>%
+  dplyr::mutate(., bias_o = sqrt(4/ (dplyr::n()))) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  rbind(., bias_o_na)
+
+bias_o <- tt %>%
+  dplyr::group_by(Order) %>%
+  dplyr::mutate(., bias_o = sqrt(4/ (dplyr::n()))) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+
+bias_f <- tt %>%
+  dplyr::group_by(Family) %>%
+  dplyr::mutate(., bias_f = sqrt(4/ (dplyr::n()))) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+
+bias_g <- tt %>%
+  dplyr::group_by(Genus) %>%
+  dplyr::mutate(., bias_g = sqrt(4/ (dplyr::n()))) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+
+
+#Calculate specialization index based on relative abundance (same output for rel ab vs read count)
+volcsf_tab <- as.data.frame(otu_table(volcsf.rel)) %>%
+  rownames_to_column(., var = "Sample") %>%
+  t(.) %>%
+  as.data.frame(.)
+
+colnames(volcsf_tab) <- volcsf_tab[1,]
+volcsf_tab3 <- volcsf_tab[-c(1), ]
+volcsf_tab4 <- dplyr::mutate_all(volcsf_tab3, function(x) as.numeric(as.character(x)))
+
+volcsf_tab4 <- volcsf_tab4 %>%
+  rownames_to_column(var = "ASV") %>%
+  left_join(oth, ., by = "ASV") %>%
+  rowwise() %>%
+  dplyr::mutate(dev = sd(across(where(is.numeric)))) %>% #calculate stdev
+  dplyr::mutate(mean = rowMeans(across(2:22))) %>% #calculate mean
+  dplyr::mutate(si = dev/mean) %>% #calculate specialization index
+  as.data.frame(.) 
+
+volcsf_tab5 <- volcsf_tab4 %>%
+  select(ASV, si)
+
+
+####Final SI scores
+#order
+si_o_f <- full_join(bias_o, volcsf_tab5, by = "ASV") %>%
+  dplyr::mutate(., si_f = si - bias_o)
+
+si_o_co <- mean(si_o_f$si_f)
+si_o_co #1.85
+
+si_o_f <- si_o_f %>%
+  dplyr::mutate(hab = case_when(
+      si_f >= si_o_co ~ "Specialist",
+      si_f < si_o_co ~ "Generalist"))%>%
+  select(ASV, hab)
+
+#with NA different
+si_o_f2 <- full_join(bias_o_v2, volcsf_tab5, by = "ASV") %>%
+  dplyr::mutate(., si_f = si - bias_o)
+
+si_o_co2 <- mean(si_o_f2$si_f)
+si_o_co2
+
+si_o_f2 <- si_o_f2 %>%
+  dplyr::mutate(hab = case_when(
+      si_f >= si_o_co2 ~ "Specialist",
+      si_f < si_o_co2 ~ "Generalist"))%>%
+  select(ASV, hab)
+
+#family
+si_f_f <- full_join(bias_f, volcsf_tab5, by = "ASV") %>%
+  dplyr::mutate(., si_f = si - bias_f)
+
+si_f_co <- mean(si_f_f$si_f)
+si_f_co #1.89
+
+si_f_f <- si_f_f %>%
+  dplyr::mutate(hab = case_when(
+      si_f >= si_f_co ~ "Specialist",
+      si_f < si_f_co ~ "Generalist"))%>%
+  select(ASV, hab)
+
+#Genus
+si_g_f <- full_join(bias_g, volcsf_tab5, by = "ASV") %>%
+  dplyr::mutate(., si_g = si - bias_g)
+
+si_g_co <- mean(si_g_f$si_g)
+si_g_co #1.93
+
+si_g_f <- si_g_f %>%
+  dplyr::mutate(hab = case_when(
+      si_g >= si_g_co ~ "Specialist",
+      si_g < si_g_co ~ "Generalist")) %>%
+  select(ASV, hab)
+
+#mean SI are similar for family, order, or genus (3.44, 3.46, 3.45)
+
+```
+
+```{r rel niche breadth}
+#how does this relative niche breadth match up with site presence?
+pres <- read.csv("Common_ASVs_v2.csv")
+
+pres_si <- full_join(si_o_f, pres, by = "ASV") %>%
+  select(ASV, hab, count)
+pres_si[is.na(pres_si)] <- 0
+pres_si$count <- as.factor(pres_si$count)
+
+relna_plot <- ggplot(pres_si, aes(x = count, fill = hab)) +
+  geom_histogram(binwidth = 1, stat="count", position = "dodge") +
+  theme_bw()  +
+  scale_fill_manual(values=c("#e41a1c", "#377eb8"),
+                      name = "Relative\nniche breadth") +
+  labs(x = "Site occupancy", y = "Count of ASVs")
+
+relna_plot
+
+#with different NA
+pres_si2 <- full_join(si_o_f2, pres, by = "ASV") %>%
+  select(ASV, hab, count)
+pres_si2[is.na(pres_si2)] <- 0
+pres_si2$count <- as.factor(pres_si2$count)
+
+relna_plot2 <- ggplot(pres_si2, aes(x = count, fill = hab)) +
+  geom_histogram(binwidth = 1, stat="count", position = "dodge") +
+  theme_bw() +
+  scale_fill_manual(values=c("#e41a1c", "#377eb8"),
+                      name = "Relative\nniche breadth") +
+  labs(x = "Site occupancy", y = "Count of ASVs")
+
+relna_plot2
+
+# A lot of relative habitat generalists do not even meet the abundance criteria to be present at any sites!
+# When you filter to remove these from the data set, you still get the majority of generalists being present at only 1 site...
+
+```
+
+```{r}
+#final supp plot
+
+snb_plots <- ggarrange(out_plot, out_plot_z,
+                       nrow = 1, ncol = 2,
+                       labels = c("C", "D"))
+
+snb_plots
+
+#ggsave("snb_plots.svg", plot = snb_plots, dpi = 300, width = 150, height = 100, units = "mm")
+
+sup_nb_plot <- ggarrange(nb_plot, snb_plots,
+                         labels = c("A", ""),
+                         nrow = 2, ncol = 1,
+                         heights = c(0.5, 1))
+
+sup_nb_plot
+
+#ggsave("snb_plots_rel.svg", plot = sup_nb_plot, dpi = 300, width = 150, height = 150, units = "mm")
+
+```

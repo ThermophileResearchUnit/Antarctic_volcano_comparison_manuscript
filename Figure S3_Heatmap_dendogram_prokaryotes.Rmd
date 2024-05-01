@@ -1,0 +1,141 @@
+---
+title: "Heat/dendogram"
+author: "Stephen Noell"
+date: "07/07/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning=FALSE,
+                      fig.align = "left",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation   
+library("GGally")          # ggplot2 extension for plots - inspect several plots together
+library("vegan")           # multivariate analysis
+library("here")            # set the path to the folder 
+library(RColorBrewer)          # for color palettes
+library("ggpubr")         # for arranging plots
+library("svglite")        #for saving SVGs
+library(reshape2)
+library(grDevices)
+library(binovisualfields)
+library(phyloseq)
+library(pheatmap)
+
+set.seed(57)
+```
+
+
+```{r}
+# Load the data, with relative abundances, filtered to remove contaminants
+volcsfrel <- readRDS("physeq.volcs.rel")
+
+abund <- as.data.frame(otu_table(volcsfrel)) %>%
+  t(.)
+abund_f <- as.data.frame(abund) %>%
+  tibble::rownames_to_column(., var = "ASV")
+
+tax <- as.data.frame(tax_table(volcsfrel))
+tax_f <- as.data.frame(tax) %>%
+  tibble::rownames_to_column(., var = "ASV")
+
+tax_abund <- merge(tax_f, abund_f, by = "ASV")
+tax_abund[is.na(tax_abund)] <- "Unassigned"
+
+```
+
+```{r}
+
+#calculate relative abundance of each phylum
+phyla_abund <- tax_abund %>%
+  select(Phylum, 9:29)
+
+phyla_abund_m <- melt(phyla_abund) %>%
+  dplyr::group_by(variable, Phylum) %>%
+  summarize_at("value", sum)  %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  filter(value > 0.01)
+
+p_a_f <- reshape2::dcast(phyla_abund_m, Phylum ~ variable) %>%
+  data.frame(., row.names = 1)
+
+#Prepare data into matrix
+p_a_f_m <- as.matrix(p_a_f)
+
+p_a_f_m[is.na(p_a_f_m)] <- 0
+
+#heatmap
+pheatmap(p_a_f_m,
+        color = colorRampPalette(brewer.pal(8, "RdPu"))(25),
+        height = 3.5, 
+        width = 4.7,
+        fontsize = 7,
+        filename = "heatmap_dendogram_phylum.png")
+
+```
+
+
+```{r}
+#Class instead of phylum
+class_abund <- tax_abund %>%
+  select(Class, 9:29)
+
+class_abund_m <- melt(class_abund) %>%
+  dplyr::group_by(variable, Class) %>%
+  summarize_at("value", sum) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  filter(value > 0.05)
+
+c_a_f <- reshape2::dcast(class_abund_m, Class ~ variable) %>%
+  data.frame(., row.names = 1)
+
+#Prepare data into matrix
+c_a_f_m <- as.matrix(c_a_f)
+
+c_a_f_m[is.na(c_a_f_m)] <- 0
+
+#heatmap
+pheatmap(c_a_f_m,
+        col = colorRampPalette(brewer.pal(8, "RdPu"))(25),
+        height = 3.5, 
+        width = 4.7,
+        fontsize = 7,
+        filename = "heatmap_dendogram_class.png")
+
+```
+
+```{r}
+#Order
+order_abund <- tax_abund %>%
+  select(Order, 9:29)
+
+order_abund_m <- melt(order_abund) %>%
+  dplyr::group_by(variable, Order) %>%
+  summarize_at("value", sum) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  filter(value > 0.02)
+
+o_a_f <- reshape2::dcast(order_abund_m, Order ~ variable) %>%
+  data.frame(., row.names = 1)
+
+#Prepare data into matrix
+o_a_f_m <- as.matrix(o_a_f)
+
+o_a_f_m[is.na(o_a_f_m)] <- 0
+
+#heatmap
+pheatmap(o_a_f_m,
+        col = colorRampPalette(brewer.pal(8, "RdPu"))(25))
+```

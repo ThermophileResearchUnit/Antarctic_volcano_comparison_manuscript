@@ -1,0 +1,712 @@
+---
+title: "Biological diversity_volcs"
+author: "Stephen Noell"
+date: "01/07/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation
+library("phyloseq")        # analysis of microbial communities
+library("vegan")           # ecological multivariate analyses
+library("microbiome") #for analyzing phyloseq objects
+library("viridis") #color package
+library("svglite") #for saving SVGs
+library("ggpubr") #for saving plots
+library("here")            # set the path to the folder
+library("ggplot2")
+library("ggVennDiagram")
+library(forcats)
+library(pairwiseAdonis)
+library("dplyr")
+library("MicEco")
+library("stringr")
+library(gplots)
+library(plyr)
+library(reshape2)
+
+set.seed(57)
+```
+
+```{r}
+# Load the final phyloseq object, with contaminants removed and CLR abundance adjusted
+volcsf.clr <- readRDS("physeq.volcs.clr")
+
+#Load version of physeq object, with contaminants removed but not normalized, for alpha diversity analysis
+volcsf <- readRDS("physeq.volcs.cont")
+
+#Load version of physeq object, with contaminants removed and relative abundance normalized
+volcsf.rel <- readRDS("physeq.volcs.rel")
+
+```
+
+```{r editing ggVennDiagram function}
+# Edit the ggVennDiagram function to allow customization of fill values
+
+ggVennDiagram2 <- function(x, category.names=names(x),
+                          show_intersect = FALSE,
+                          set_color = "black",
+                          set_size = NA,
+                          label=c("both","count","percent","none"),
+                          label_alpha=0.5,
+                          label_geom=c("label","text"),
+                          label_color = "black",
+                          label_size = NA,
+                          label_percent_digit = 0,
+                          label_txtWidth = 40,
+                          edge_lty = "solid",
+                          edge_size = 1,
+                          fill2 = NA,
+                          ...){
+
+  if (!is.list(x)){
+    stop(simpleError("ggVennDiagram() requires at least a list."))
+  }
+  names(x) <- category.names
+  dimension <- length(x)
+  label <- match.arg(label)
+  label_geom <- match.arg(label_geom)
+  if (dimension <= 7){
+    plot_venn2(x,
+              show_intersect = show_intersect,
+              set_color = set_color,
+              set_size = set_size,
+              label = label,
+              label_alpha=label_alpha,
+              label_geom = label_geom,
+              label_color = label_color,
+              label_size = label_size,
+              label_percent_digit = label_percent_digit,
+              label_txtWidth = label_txtWidth,
+              edge_lty = edge_lty,
+              edge_size = edge_size,
+              fill2 = fill2,
+              ...)
+  }
+  else{
+    stop("Only support 2-7 dimension Venn diagram.")
+  }
+}
+
+
+
+plot_venn2 <- function(x,
+                      show_intersect,
+                      set_color,
+                      set_size,
+                      label,
+                      label_geom,
+                      label_alpha,
+                      label_color,
+                      label_size,
+                      label_percent_digit,
+                      label_txtWidth,
+                      edge_lty,
+                      edge_size,
+                      fill2,
+                      ...){
+  venn <- Venn(x)
+  data <- process_data(venn)
+  p <- ggplot()
+
+  order2 <- as.vector(data@region$name)
+  
+  fill2$names <- factor(as.character(fill2$names), levels=order2)
+  fill2 <- fill2[order(fill2$names),]
+  fill2 <- as.data.frame(fill2)
+  
+  region.params <- list(data = data@region, mapping = aes_string(fill = fill2$ab))
+
+  edge.params <- list(data = data@setEdge, 
+                      mapping = aes_string(color = 'id'), 
+                      show.legend = FALSE)
+
+  if (utils::packageVersion('ggplot2') >= '3.4.0'){
+    edge.params$linetype <- edge_lty
+    edge.params$linewidth <- edge_size
+  }else{
+    edge.params$lty <- edge_lty
+    edge.params$size <- edge_size
+  }
+
+  text.params <- list(data = data@setLabel, 
+                      mapping = aes_string(label = 'name'),
+                      size = set_size,
+                      color = set_color
+                 )
+
+  region.layer <- do.call('geom_sf', region.params)
+  
+  edge.layer <- do.call('geom_sf', edge.params)
+
+  text.layer <- do.call('geom_sf_text', text.params)
+
+  p <- p + region.layer + edge.layer + text.layer + theme_void()
+
+  if (label != "none" & show_intersect == FALSE){
+    region_label <- data@region %>%
+      dplyr::filter(.data$component == "region") %>%
+      dplyr::mutate(percent = paste(round(.data$count*100/sum(.data$count),
+                                          digits = label_percent_digit),"%", sep="")) %>%
+      dplyr::mutate(both = paste(.data$count,paste0("(",.data$percent,")"),sep = "\n"))
+    if (label_geom == "label"){
+      p <- p + geom_sf_label(aes_string(label=label),
+                             data = region_label,
+                             alpha=label_alpha,
+                             color = label_color,
+                             size = label_size,
+                             lineheight = 0.85,
+                             label.size = NA)
+    }
+    if (label_geom == "text"){
+      p <- p + geom_sf_text(aes_string(label=label),
+                            data = region_label,
+                            alpha=label_alpha,
+                            color = label_color,
+                            size = label_size,
+                            lineheight = 0.85)
+    }
+  }
+
+  if (show_intersect == TRUE){
+    items <- data@region %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(text = yulab.utils::str_wrap(paste0(.data$item, collapse = " "),
+                                             width = label_txtWidth)) %>%
+      sf::st_as_sf()
+    label_coord = sf::st_centroid(items$geometry) %>% sf::st_coordinates()
+    p <- ggplot(items) +
+      geom_sf(aes_string(fill=fill2$ab)) +
+      geom_sf_text(aes_string(label = "name"),
+                   data = data@setLabel,
+                   inherit.aes = F) +
+      geom_text(aes_string(label = "count", text = "text"),
+                x = label_coord[,1],
+                y = label_coord[,2],
+                show.legend = FALSE) +
+      theme_void()
+    ax <- list(
+      showline = FALSE
+    )
+    p <- plotly::ggplotly(p, tooltip = c("text")) %>%
+      plotly::layout(xaxis = ax, yaxis = ax)
+  }
+
+  p
+}
+
+```
+
+```{r Venn of ASVs 1}
+#Venn diagram of ASVs
+
+volcsf.rel.nonz <- prune_taxa(taxa_sums(volcsf.rel) > 0, volcsf.rel)
+
+test <- ps_venn(volcsf.rel.nonz,
+        "Site",
+        fraction = 0,
+        weight = TRUE,
+        plot = FALSE,
+        legend = TRUE)
+
+ps_venn(volcsf.rel.nonz,
+        "Site",
+        fraction = 0,
+        weight = TRUE,
+        plot = TRUE,
+        legend = TRUE)
+
+#Manually enter abundance of ASVs in each section into a data frame
+
+df_ab <- as.data.frame(c(0.106, 0.058, 0.009, 0.014, 0.346, 0.019, 0.005,
+              0.033, 0.186, 0.026, 0.0001, 0.045, 0.133,
+              0.008, 0.013)) %>%
+  dplyr::rename(., "ab" = 1)
+
+df_ab$names <- names(test) %>%
+  str_replace_all(., "__", "..")
+
+```
+
+```{r Venn of ASVs 2}
+
+#Final Venn diagram
+
+# first, subset ASVs by Site
+tr<- volcsf.clr %>%
+  subset_samples(Site == "Erebus - TR") %>%
+  prune_taxa(taxa_sums(.) > 0, .)
+
+asv_tr <- data.frame(t(otu_table(tr))) %>%
+  rownames_to_column() %>%
+  select(rowname)
+
+set1 <- paste(asv_tr$rowname, sep="")
+
+# WC
+wc<- volcsf.clr %>%
+  subset_samples(Site == "Erebus - WC") %>%
+  prune_taxa(taxa_sums(.) > 0, .)
+
+asv_wc <- data.frame(t(otu_table(wc))) %>%
+  rownames_to_column() %>%
+  select(rowname)
+
+set2 <- paste(asv_wc$rowname, sep="")
+
+#Melbourne
+mel<- volcsf.clr %>%
+  subset_samples(Site == "Melbourne") %>%
+  prune_taxa(taxa_sums(.) > 0, .)
+
+asv_mel <- data.frame(t(otu_table(mel))) %>%
+  rownames_to_column() %>%
+  select(rowname)
+
+set3 <- paste(asv_mel$rowname, sep="")
+
+#Rittmann
+rit<- volcsf.clr %>%
+  subset_samples(Site == "Rittmann") %>%
+  prune_taxa(taxa_sums(.) > 0, .)
+
+asv_rit <- data.frame(t(otu_table(rit))) %>%
+  rownames_to_column() %>%
+  select(rowname)
+
+set4 <- paste(asv_rit$rowname, sep="")
+
+
+##put all together
+x = list(set1, set2, set3, set4)
+names(x) <- c("Erebus - TR","Erebus - WC", "Melbourne","Rittmann")
+
+#df_ab <- do.call(rbind.data.frame, df_ab) %>%
+ # dplyr::rename(., "ab" = 1)
+
+#Venn Diagram
+
+volcs_venn <- ggVennDiagram2(x, label_alpha = 0, fill2=df_ab,
+                             label_size = 2.5, set_size = 3) +
+  scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+  scale_x_continuous(expand = expansion(mult = 0.12)) +
+  scale_color_manual(values=c("#020000", "#030000", "#010000", "#040000"),)
+
+volcs_venn
+
+```
+
+
+```{r}
+#Are common taxa abundant?
+#First look at the Site level
+
+#set threshold for presence at a site
+thresh_site <- 5E-5
+
+volcsf.2_raw <- merge_samples(volcsf, "Site", fun=mean)
+volcsf.2 <- transform_sample_counts(volcsf.2_raw, function(x) x / sum(x) )
+
+volcsf_tab_site <- as.data.frame(otu_table(volcsf.2)) %>%
+  rownames_to_column(., var = "Site") %>%
+  t(.) %>%
+  as.data.frame(.)
+
+colnames(volcsf_tab_site) <- volcsf_tab_site[1,]
+volcsf_tab3_site <- volcsf_tab_site[-c(1), ]
+volcsf_tab4_site <- dplyr::mutate_all(volcsf_tab3_site, function(x) as.numeric(as.character(x)))
+
+volcsf_tab4_site$count <- rowSums(volcsf_tab4_site > thresh_site) #for each ASV, how many sites is it found in?
+volcsf_tab4_site$reads <- rowMeans(volcsf_tab4_site[,c(-5)]) #calculate mean relative abundance of each ASV
+volcsf_tab4_site <- volcsf_tab4_site %>%
+  rowwise() %>%
+  dplyr::mutate(median = median(c(`Erebus - TR`, `Erebus - WC`, Melbourne, Rittmann))) %>%
+  dplyr::mutate(dev = sd(c(`Erebus - TR`, `Erebus - WC`, Melbourne, Rittmann)))
+
+
+#sum of all reads across all sites for each ASV
+volcsf_tab5_site <- volcsf_tab4_site %>%
+  rownames_to_column(., var = "ASV")
+volcsf_tab5_site$count <- as.factor(volcsf_tab5_site$count)
+volcsf_tab5_site <- volcsf_tab5_site %>%
+  filter(., count != 0)
+
+#Looking at the data - are common ASVs abundant?
+plot.co.ab_site <- ggplot(volcsf_tab5_site, aes(x = count, y = reads)) +
+  geom_point() +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  scale_y_continuous(trans='log10') +
+  labs(y="Mean rel\nabundance (log10)", x="Site Occupancy")
+
+plot.co.ab_site.med <- ggplot(volcsf_tab5_site, aes(x = count, y = median)) +
+  geom_point() +
+  #geom_text(nudge_x = 0.1) +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  scale_y_continuous(trans='log10') +
+  labs(y="Median rel\nabundance (log10)", x="Site Occupancy")
+
+plot.co.ab_site.dev <- ggplot(volcsf_tab5_site, aes(x = count, y = dev, label = ASV)) +
+  geom_point() +
+  theme_bw() +
+  #geom_text(nudge_x = 0.1) +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  #scale_y_continuous(trans='log10') +
+  labs(y="StDev of rel\nabundance", x="Site Occupancy")
+
+#Looks like the common ASVs tend to be more abundant, driven mainly by 4 ASVs with very high abundance at all 4 sites
+
+#How many ASVs are shared between sites?
+volcsf_tab6_site <- volcsf_tab5_site %>%
+  dplyr::count(., count) %>%
+  as.data.frame(.)
+
+plot.co.ab.2_site <- ggplot(volcsf_tab6_site, aes(x = count, y = n)) +
+  geom_col() +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  labs(y="# ASVs", x="Site Occupancy")
+
+ggarrange(plot.co.ab_site,
+          plot.co.ab_site.med,
+          plot.co.ab_site.dev,
+          plot.co.ab.2_site,
+          ncol = 2,
+          nrow = 2)
+#the VAST majority of ASVs are only found at one site
+```
+
+
+```{r Sample level}
+#Look at sample level
+#set threshold for presence at a sample
+thresh_sample <- 5E-5
+
+volcsf.2 <- transform_sample_counts(volcsf, function(x) x / sum(x) )
+
+volcsf_tab_sample <- as.data.frame(otu_table(volcsf.2)) %>%
+  rownames_to_column(., var = "Sample") %>%
+  t(.) %>%
+  as.data.frame(.)
+
+colnames(volcsf_tab_sample) <- volcsf_tab_sample[1,]
+volcsf_tab3_sample <- volcsf_tab_sample[-c(1), ]
+volcsf_tab4_sample <- dplyr::mutate_all(volcsf_tab3_sample, function(x) as.numeric(as.character(x)))
+
+count1 <- rowSums(volcsf_tab4_sample > thresh_sample) %>% #for each ASV, how many samples is it found in?
+  melt(.) %>%
+  dplyr::rename(., count = 1)
+
+reads1 <- rowMeans(volcsf_tab4_sample) %>% #calculate mean relative abundance of each ASV
+  melt(.) %>%
+  dplyr::rename(., reads = 1)
+
+median <- volcsf_tab4_sample %>%
+  rowwise() %>%
+  dplyr::mutate(median = median(c_across(where(is.numeric)), na.rm=TRUE)) %>%
+  as.data.frame(.) %>%
+  select(median)
+
+dev <- volcsf_tab4_sample %>%
+  rowwise() %>%
+  dplyr::mutate(dev = sd(c_across(where(is.numeric)), na.rm=TRUE)) %>%
+  as.data.frame(.) %>%
+  select(dev)
+
+volcsf_tab4_sample.f <- cbind(volcsf_tab4_sample, count1, reads1, median, dev)
+
+#sum of all reads across all samples for each ASV
+volcsf_tab5_sample <- volcsf_tab4_sample.f %>%
+  rownames_to_column(., var = "ASV")
+volcsf_tab5_sample$count <- as.factor(volcsf_tab5_sample$count)
+volcsf_tab5_sample <- volcsf_tab5_sample %>%
+  filter(., count != 0)
+
+#Looking at the data - are common ASVs abundant?
+plot.co.ab_sample <- ggplot(volcsf_tab5_sample, aes(x = count, y = reads)) +
+  geom_point() +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=6),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  scale_y_continuous(trans='log10') +
+  labs(y="Mean rel\nabundance (log10)", x="Sample Occupancy")
+
+plot.co.ab_sample.med <- ggplot(volcsf_tab5_sample, aes(x = count, y = median)) +
+  geom_point() +
+  #geom_text(nudge_x = 0.1) +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=6),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  scale_y_continuous(trans='log10') +
+  labs(y="Median rel\nabundance (log10)", x="Sample Occupancy")
+
+plot.co.ab_sample.dev <- ggplot(volcsf_tab5_sample, aes(x = count, y = dev, label = ASV)) +
+  geom_point() +
+  theme_bw() +
+  #geom_text(nudge_x = 0.1) +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=6),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  #scale_y_continuous(trans='log10') +
+  labs(y="StDev of rel\nabundance", x="Sample Occupancy")
+
+#Looks like the common ASVs tend to be more abundant, driven mainly by 4 ASVs with very high abundance at all 4 samples
+
+#How many ASVs are shared between samples?
+volcsf_tab6_sample <- volcsf_tab5_sample %>%
+  dplyr::count(., count) %>%
+  as.data.frame(.)
+
+plot.co.ab.2_sample <- ggplot(volcsf_tab6_sample, aes(x = count, y = n)) +
+  geom_col() +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=6),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  labs(y="# ASVs", x="Sample Occupancy")
+
+#write.csv(volcsf_tab5_sample, "volcs_asvs_num_samples.csv")
+```
+
+
+```{r MAGs Venn}
+#Venn diagram of MAGs
+
+mags.0 <- read.csv(file = "gtdb_checkm_abund_all4_dedup.csv") %>%
+  select(-1)
+
+#split into 4 lists of presence at each site
+
+mags.tr <- mags.0 %>%
+  filter(TR_presence == 1)
+
+mags.wc <- mags.0 %>%
+  filter(WC_presence == 1)
+
+mags.rit <- mags.0 %>%
+  filter(Ritt3_presence == 1)
+
+mags.mel <- mags.0 %>%
+  filter(Mel_presence == 1)
+
+##put all together
+x.mag = list(mags.tr$bin, mags.wc$bin, mags.mel$bin, mags.rit$bin)
+names(x.mag) <- c("Erebus - TR","Erebus - WC", "Melbourne","Rittmann")
+
+#Categorize each mag based on where it's found at
+mag.inters <- gplots::venn(x.mag, show.plot = FALSE)
+mag.inters.2 <- attributes(mag.inters)$intersections
+mag.inters.3 <- ldply(mag.inters.2, data.frame) %>%
+  dplyr::rename(Intersect = 1, bin = 2)
+
+mag.inters.3$Intersect <- str_replace_all(mag.inters.3$Intersect, ":", "..")
+
+#make table to save for merging with other MAG data
+mag.inters.fin <- mag.inters.3
+mag.inters.fin$Intersect <- str_replace_all(mag.inters.fin$Intersect, " ", "")
+#write.csv(mag.inters.fin, "mags_intersect.csv")
+
+#Merge this info back in with the abundance data
+mag.inters.4 <- full_join(mag.inters.3, mags.0, by = "bin") %>%
+  dplyr::group_by(., Intersect) %>%
+  dplyr::summarise(., ab.0 = sum(total_abundance_woRitt3M)) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  dplyr::mutate(ab = ab.0 / sum(ab.0)) %>%
+  dplyr::rename(., names = Intersect) %>%
+  select(names, ab)
+
+mag.inters.4$ab <- as.numeric(mag.inters.4$ab)
+
+#because there are some intersections that have no mags, need to add these into this frame
+test <- Venn(x.mag)
+test1 <- process_data(test)
+test2 <- as.data.frame(test1@region$name) %>% 
+  dplyr::rename(names = 1)
+test3 <- anti_join(test2, mag.inters.4)
+test3$ab <- 0
+
+mag.inters.5 <- rbind(mag.inters.4, test3)
+
+
+#Venn Diagram
+
+mags_venn <- ggVennDiagram2(x.mag, label_alpha = 0, fill2=mag.inters.5,
+                             label_size = 2.5, set_size = 3) +
+  scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+  scale_x_continuous(expand = expansion(mult = 0.12)) +
+  scale_color_manual(values=c("#020000", "#030000", "#010000", "#040000"))
+
+mags_venn
+```
+
+
+```{r mags abund}
+mags.1 <- mags.0 %>%
+  select(bin, num_sites, median_abundance_woRitt3M, std_abundance_woRitt3M) %>%
+  dplyr::rename(count = num_sites, dev = std_abundance_woRitt3M, median = median_abundance_woRitt3M)
+
+mags.1$count = as.factor(mags.1$count)
+  
+plot.co.ab_mag.med <- ggplot(mags.1, aes(x = count, y = median)) +
+  geom_point() +
+  #geom_text(nudge_x = 0.1) +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  scale_y_continuous(trans='log10') +
+  labs(y="Median rel\nabundance (log10)", x="Site Occupancy")
+
+plot.co.ab_mag.dev <- ggplot(mags.1, aes(x = count, y = dev, label = bin)) +
+  geom_point() +
+  theme_bw() +
+  #geom_text(nudge_x = 0.1) +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  #scale_y_continuous(trans='log10') +
+  labs(y="StDev of rel\nabundance", x="Site Occupancy")
+
+#Looks like the common MAGs tend to be more abundant, driven mainly by 4 MAGs with very high abundance at all 4 sites
+
+#How many MAGs are shared between sites?
+mags.2 <- mags.1 %>%
+  dplyr::count(., count) %>%
+  as.data.frame(.)
+
+plot.co.ab.2_mag <- ggplot(mags.2, aes(x = count, y = n)) +
+  geom_col() +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=12),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12)) +
+  labs(y="# MAGs", x="Site Occupancy")
+
+```
+
+
+
+```{r}
+#make taxonomy table
+
+volcsf_tax <- tax_table(volcsf) %>%
+  as.data.frame(.) %>%
+  rownames_to_column(., var = "ASV")
+
+#Join tax table with info on how many sites each ASV is found at
+volcsf_tab8 <- volcsf_tab5_site %>%
+  select(ASV, count, reads) %>%
+  inner_join(., volcsf_tax, by = "ASV")
+
+volcsf_tab9 <- volcsf_tab5_site %>%
+  select(., -count, -reads) %>%
+  right_join(., volcsf_tab8, by = "ASV") %>%
+  select(ASV, count, reads, `Erebus - TR`, `Erebus - WC`, Melbourne, Rittmann,
+         reads, Kingdom, Phylum, Class, Order, Family, Genus, Species) %>%
+  dplyr::rename(., "Average Abundance" = reads)
+
+
+#write.csv(volcsf_tab9, "Common_ASVs.csv")
+```
+
+
+
+
+
+```{r}
+#Final plot
+
+common_abund <- ggarrange(plot.co.ab.2_sample, plot.co.ab_sample.med, plot.co.ab_sample.dev,
+                          plot.co.ab.2_site, plot.co.ab_site.med, plot.co.ab_site.dev,
+                          plot.co.ab.2_mag, plot.co.ab_mag.med, plot.co.ab_mag.dev,
+                          labels = c("C", "D", "E", 
+                                     "F", "G", "H",
+                                     "I", "J", "K"),
+                          nrow = 3,
+                          ncol = 3)
+
+common_abund
+
+venns <- ggarrange(volcs_venn, mags_venn,
+                   labels = c("A", "B"),
+                   nrow = 1,
+                   ncol = 2)
+
+common_abund_f <- ggarrange(venns, common_abund,
+                            nrow = 2,
+                            ncol = 1,
+                            heights = c(0.8, 1))
+common_abund_f
+
+#ggsave("common_abund.png", common_abund_f, width = 200, height = 250, units = "mm", dpi = 300)
+
+#ggsave("common_abund.svg", common_abund_f, width = 200, height = 250, units = "mm", dpi = 300)
+```

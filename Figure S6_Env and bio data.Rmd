@@ -1,0 +1,248 @@
+---
+title: "volcs analysis of env on bio"
+author: "Stephen Noell"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation
+library("phyloseq")        # analysis of microbial communities
+library("vegan")           # ecological multivariate analyses
+library("patchwork")       # plots together
+library("pairwiseAdonis")
+library("microbiome") #for analyzing phyloseq objects
+library("viridis") #color package
+library("svglite") #for saving SVGs
+library("ggpubr") #for saving plots
+library("here")            # set the path to the folder 
+library("ggrepel")
+library("microeco")
+library("file2meco") #for converting phyloseq to microeco
+library("mice")
+library("microViz")
+
+set.seed(57)
+```
+
+
+```{r Load the data}
+# Load the final phyloseq object, with contaminants removed and CLR abundance adjusted
+volcsfclr <- readRDS("physeq.volcs.clr")
+volcsfa <- readRDS("physeq.volcs.rel")
+envdata <-  read.csv("Env_data.csv", header = TRUE) %>%
+  column_to_rownames(., var = "Sample_Name")
+
+#transform phyloseq to microeco object
+volcsfa_meco <- phyloseq2meco(volcsfa)
+volcsfa_meco$tax_table <- tidy_taxonomy(volcsfa_meco$tax_table)
+volcsfa_meco$sample_table <- data.frame(envdata)
+
+volcsfclr_meco <- phyloseq2meco(volcsfclr)
+volcsfclr_meco$tax_table <- tidy_taxonomy(volcsfclr_meco$tax_table)
+volcsfclr_meco$sample_table <- data.frame(envdata)
+
+t1 <- trans_env$new(dataset = volcsfa_meco, env_cols = c(5:37))
+
+#try with only higher temp samples
+volcsfa_hot <- volcsfa %>%
+  ps_filter(., Temperature > 34)
+
+volcsfa_hot_meco <- phyloseq2meco(volcsfa_hot)
+volcsfa_hot_meco$tax_table <- tidy_taxonomy(volcsfa_hot_meco$tax_table)
+#volcsfa_hot_meco$sample_table <- data.frame(envdata)
+
+t1_hot <- trans_env$new(dataset = volcsfa_hot_meco, env_cols = c(5:35))
+
+```
+
+
+```{r}
+# initial dbRDA with all factors
+t1$cal_ordination(method = "dbRDA", use_measure = "bray")
+t1$trans_ordination(adjust_arrow_length = TRUE, max_perc_env = 1.5)
+t1$plot_ordination(plot_color = "Site", plot_shape = "Site", 
+                   shape_values = c(16, 17, 15, 3),  color_values = c("#4477AA","#66CCEE","#CCBB44","#EE6677"))
+
+```
+
+
+```{r}
+#Mantel test for correlations betw env parameters and microbial community, determine which factors are significant
+t1$cal_mantel(use_measure = "bray")
+sig_facs <- t1$res_mantel %>%
+  dplyr::filter(., p.value < 0.05)
+
+sig_facs
+
+#drop some of the elements with no real biological relevance
+
+t2 <- trans_env$new(dataset = volcsfa_meco, env_cols = c("Na", "K", "Mn", "Ni", 
+                                                         "pH", "GWC", "TC", "Ca", "P",
+                                                         "Temperature", "Mg"))
+t2$cal_ordination(method = "dbRDA", use_measure = "bray")
+t2$trans_ordination(adjust_arrow_length = TRUE, max_perc_env = 1.5)
+t2$plot_ordination(plot_color = "Site", color_values = c("#4477AA","#66CCEE","#CCBB44","#EE6677"))
+
+cap_plot_f <- t2$plot_ordination(plot_color = "Site", color_values = c("#4477AA","#66CCEE","#CCBB44","#EE6677"),
+                                 plot_shape = "Site", shape_values = c(16, 17, 15, 3))
+cap_plot_f
+
+```
+
+
+```{r box plots}
+# select parameters of interest: those that were significant (prior to adjustment),
+# as well as those of interest (added TOC, TON, TN, S)
+t_fin <- trans_env$new(dataset = volcsfa_meco, env_cols = c("Temperature", "pH", "Conductivity", 
+                                                            "GWC", "TC", "TN", 
+                                                            "TOC", "TON", 
+                                                            "Na", "K", "Mn", "Ni",
+                                                            "Ca", "P", "Mg", "S"))
+t_fin$cal_diff(method = "anova", group = "Site")
+# place all the plots into a list
+tmp <- list()
+for(i in colnames(t_fin$data_env)){
+    tmp[[i]] <- t_fin$plot_diff(measure = i, add_sig_text_size = 3.5, xtext_size = 12,
+                             group_order = c("Erebus - TR", "Erebus - WC", "Melbourne", "Rittmann"), 
+                       color_values = c("#4477AA","#66CCEE","#CCBB44","#EE6677")) + 
+      theme(axis.text.x = element_blank(),
+            axis.title.y = element_text(size = 10),
+            axis.text.y = element_text(size = 10),
+            axis.ticks.x = element_blank(),
+        plot.margin = unit(c(0.1, 0, 0, 1), "cm"))
+}
+
+envplot <- ggarrange(plotlist = tmp, nrow = 4, ncol = 4,
+          common.legend = TRUE)
+
+envplot
+
+```
+
+
+```{r PCA all env data}
+#PCA of all env data
+# Select numeric data
+envdata_scl <- as.matrix(envdata[,5:37])
+envdata_scl<- scale(envdata_scl)
+
+# Calculate euclidean distances
+envdata.ord.dis <- vegdist(envdata_scl, method="euclidean", na.rm=TRUE)
+
+# PCoA
+pcoa.envdata.ord <- cmdscale(envdata.ord.dis, eig = T)
+
+# Create a dataframe to plot the PCoA 
+PCoA.envdata.ord <- data.frame(PCoA1 = pcoa.envdata.ord$points[,1], PCoA2 = pcoa.envdata.ord$points[,2])
+PCoA.envdata.ord.df<- merge(PCoA.envdata.ord , envdata, by="row.names", sort = F) %>%
+  column_to_rownames("Row.names")
+
+# How much % of the variance is explained by the axes?
+round(pcoa.envdata.ord$eig*100/sum(pcoa.envdata.ord$eig),1)
+pcoa.envdata.ord.values <- as.vector(round(pcoa.envdata.ord$eig*100/sum(pcoa.envdata.ord$eig),1))
+pcoa.envdata.ord.x <- paste("Axis 1 [", pcoa.envdata.ord.values[1], "%]")
+pcoa.envdata.ord.y <- paste("Axis 2 [", pcoa.envdata.ord.values[2], "%]")
+
+#plot
+pcoa.envdata<- ggplot(data = PCoA.envdata.ord.df, aes(x = PCoA1, y = PCoA2,
+                                       color = Site, shape = Site)) + 
+  geom_point(size = 3.5) +
+  #geom_text(label = rownames(PCoA.envdata.ord.df),
+        #    nudge_x = 0.25, nudge_y = 0.25, 
+         #   check_overlap = T) +
+  labs(x = pcoa.envdata.ord.x, y = pcoa.envdata.ord.y) +
+  scale_color_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677")) +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=14),
+    axis.text.x  = element_text(size=14),
+    axis.title.y = element_text(size=14),
+    axis.text.y  = element_text(size=14),
+    strip.text = element_text(size=14),
+    strip.background = element_blank(),
+    legend.text = element_text(size=14),
+    legend.title = element_text(size=14))
+
+pcoa.envdata
+```
+
+```{r PCA non-elemental}
+#PCA of non-ICPMS env data
+# Select numeric data
+envdata_scl2 <- as.matrix(envdata[,5:13])
+envdata_scl2<- scale(envdata_scl2)
+
+# Calculate euclidean distances
+envdata.ord.dis2 <- vegdist(envdata_scl2, method="euclidean", na.rm=TRUE)
+
+# PCoA
+pcoa.envdata.ord2 <- cmdscale(envdata.ord.dis2, eig = T)
+
+# Create a dataframe to plot the PCoA 
+PCoA.envdata.ord2 <- data.frame(PCoA1 = pcoa.envdata.ord2$points[,1], PCoA2 = pcoa.envdata.ord2$points[,2])
+PCoA.envdata.ord2.df<- merge(PCoA.envdata.ord2 , envdata, by="row.names", sort = F) %>%
+  column_to_rownames("Row.names")
+
+# How much % of the variance is explained by the axes?
+round(pcoa.envdata.ord2$eig*100/sum(pcoa.envdata.ord2$eig),1)
+pcoa.envdata.ord2.values <- as.vector(round(pcoa.envdata.ord2$eig*100/sum(pcoa.envdata.ord2$eig),1))
+pcoa.envdata.ord2.x <- paste("Axis 1 [", pcoa.envdata.ord2.values[1], "%]")
+pcoa.envdata.ord2.y <- paste("Axis 2 [", pcoa.envdata.ord2.values[2], "%]")
+
+#plot
+pcoa.envdata2<- ggplot(data = PCoA.envdata.ord2.df, aes(x = PCoA1, y = PCoA2,
+                                       color = Site, shape = Site)) + 
+  geom_point(size = 3.5) +
+  #geom_text(label = rownames(PCoA.envdata.ord.df),
+        #    nudge_x = 0.25, nudge_y = 0.25, 
+         #   check_overlap = T) +
+  labs(x = pcoa.envdata.ord2.x, y = pcoa.envdata.ord2.y) +
+  scale_color_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677")) +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size=14),
+    axis.text.x  = element_text(size=14),
+    axis.title.y = element_text(size=14),
+    axis.text.y  = element_text(size=14),
+    strip.text = element_text(size=14),
+    strip.background = element_blank(),
+    legend.text = element_text(size=14),
+    legend.title = element_text(size=14))
+
+pcoa.envdata2
+```
+
+
+```{r}
+# Final plot!
+env_bio <- ggarrange(pcoa.envdata, pcoa.envdata2, cap_plot_f,
+                     nrow = 1, ncol = 3,
+                     labels = c("A", "B", "C"),
+                     common.legend = TRUE)
+
+env_bio
+
+env_env_bio <- ggarrange(env_bio, envplot,
+                         nrow = 2,
+                         ncol = 1,
+                         labels = "", "D",
+                         heights = c(0.7, 1))
+
+env_env_bio
+
+#ggsave("env_env_bio.png", env_env_bio$`1`, width = 200, height = 200, units = "mm", dpi = 300)
+
+#ggsave("env_env_bio.svg", env_env_bio$`1`, width = 200, height = 200, units = "mm", dpi = 300)
+```
