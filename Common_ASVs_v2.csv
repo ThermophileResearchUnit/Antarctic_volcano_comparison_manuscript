@@ -1,0 +1,353 @@
+ASV,count,Erebus - TR,Erebus - WC,Melbourne,Rittmann,mean,Kingdom,Phylum,Class,Order,Family,Genus,Species
+ASV_2,4,0.002686204,0.044068839,0.097853644,0.003215673,0.03695609,Bacteria,Firmicutes,Desulfotomaculia,Ammonifexales,Unassigned,Unassigned,Unassigned
+ASV_3,4,0.023837761,0.002504727,0.041224102,0.03107488,0.024660368,Bacteria,Chloroflexi,AD3,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_5,4,0.0197876,0.008798324,0.017514426,0.037503795,0.020901036,Bacteria,GAL15,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_10,4,0.014016801,0.004748616,0.006887012,0.038761447,0.016103469,Bacteria,Cyanobacteria,Cyanobacteriia,Leptolyngbyales,Leptolyngbyaceae,Leptolyngbya PCC-6306,Unassigned
+ASV_35,4,0.003483233,0.001519605,0.01055025,0.017133177,0.008171566,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Bradyrhizobium,Unassigned
+ASV_42,4,0.005210357,0.004032562,0.005236423,0.009007999,0.005871835,Bacteria,Acidobacteriota,Acidobacteriae,Bryobacterales,Bryobacteraceae,Bryobacter,Unassigned
+ASV_45,4,0.005681286,0.005175792,0.001917263,0.004381618,0.00428899,Bacteria,Nitrospirota,Nitrospiria,Nitrospirales,Nitrospiraceae,Nitrospira,Unassigned
+ASV_85,4,0.003703981,0.001568676,0.001794524,0.001449647,0.002129207,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_1,3,0.152291204,0.014138782,0.001315725,0.095869903,0.065903904,Archaea,Crenarchaeota,Nitrososphaeria,SCGC AB-179-E04,Unassigned,Unassigned,Unassigned
+ASV_12,3,0,0.006248872,0.019971921,0.056386673,0.020651867,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Unassigned,Unassigned
+ASV_9,3,0.016461509,0.00386995,0.004690818,0.046496055,0.017879583,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Chthonomonadaceae,Chthonomonas,Unassigned
+ASV_15,3,0.000344539,0.008639808,0.041268637,0.008824809,0.014769448,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_11,3,0,0.013523297,0.04393752,0.000927579,0.014597099,Bacteria,Proteobacteria,Gammaproteobacteria,Gammaproteobacteria Incertae Sedis,Unknown Family,Acidibacter,Unassigned
+ASV_20,3,0,0.01037335,0.02752115,0.01149809,0.012348148,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_24,3,0,0.011496272,0.028501609,0.005109647,0.011276882,Bacteria,Deinococcota,Deinococci,Unassigned,Thermaceae,Meiothermus,Unassigned
+ASV_22,3,0,0.034818969,0.00755066,0.001845823,0.011053863,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Methylovirgula,Unassigned
+ASV_28,3,0,0.015406633,0.015029327,0.003730999,0.00854174,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_13,3,0.02558233,0.006753194,4.15E-05,0.001506722,0.008470941,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,FCPS473,Unassigned
+ASV_43,3,0,0.008373881,0.00966348,0.00377717,0.005453633,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Mastigocladopsis PCC-10914,Unassigned
+ASV_51,3,0.003712104,0.001969307,0.001342742,0.013827514,0.005212917,Bacteria,Chloroflexi,SHA-26,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_47,3,0.000905349,0.012824093,0.002677649,0,0.004101773,Bacteria,GAL15,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_64,3,0.00129706,0.000927456,0.009539777,0.003537512,0.003825451,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,1921-2,Unassigned
+ASV_68,3,8.72E-05,0.003357293,0.008431276,0.001477938,0.003338433,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_76,3,0,0.002333482,0.008356301,0.002377328,0.003266778,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_67,3,0.00032079,0.006238354,0.004199665,0.001800515,0.003139831,Bacteria,Chloroflexi,Chloroflexia,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_98,3,0,0.002869816,0.005458323,0.001031636,0.002339944,Bacteria,Cyanobacteria,Cyanobacteriia,Leptolyngbyales,Leptolyngbyaceae,Leptolyngbya PCC-6306,Unassigned
+ASV_107,3,0,0.003824225,0.001285272,0.003575443,0.002171235,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrososphaera,Unassigned
+ASV_112,3,0,0.001322676,0.005900617,0.000960935,0.002046057,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_111,3,0.000524572,0.002883261,0.003183253,0.001421435,0.00200313,Bacteria,Gemmatimonadota,Gemmatimonadetes,Gemmatimonadales,Gemmatimonadaceae,Unassigned,Unassigned
+ASV_102,3,0.002085632,0.001925931,0.0026421,0.000340834,0.001748624,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_132,3,3.35E-05,0.003527219,0.001746844,0.00040049,0.001427008,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Acidobacteriaceae (Subgroup 1),Acidipila-Silvibacterium,Unassigned
+ASV_166,3,0,0.000690733,0.003279505,0.001367592,0.001334457,Bacteria,Cyanobacteria,Vampirivibrionia,Obscuribacterales,Obscuribacteraceae,Unassigned,Unassigned
+ASV_202,3,0,0.000666786,0.001309617,0.002426498,0.001100725,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhodomicrobiaceae,Rhodomicrobium,vannielii
+ASV_183,3,0,0.001324215,0.001797584,0.001279589,0.001100347,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_236,3,0,0.000545967,0.002011089,0.000479018,0.000759018,Bacteria,Proteobacteria,Gammaproteobacteria,WD260,Unassigned,Unassigned,Unassigned
+ASV_258,3,7.32E-05,0.000648237,0.001158493,0.000793127,0.000668275,Bacteria,Myxococcota,Polyangia,Polyangiales,Polyangiaceae,Pajaroellobacter,Unassigned
+ASV_6,2,3.92E-05,0.003212089,0.002454695,0.140409,0.036528749,Archaea,Crenarchaeota,Nitrososphaeria,Caldiarchaeales,Terrestrial Hot Spring Gp(THSCG),Unassigned,Unassigned
+ASV_14,2,0.000111051,0.001465284,0.000217964,0.115025242,0.029204885,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_8,2,0.020279464,0,0.000523003,0.068974411,0.02244422,Bacteria,Deinococcota,Deinococci,Thermales,Thermaceae,Meiothermus,Unassigned
+ASV_16,2,0,0.008979003,0.047815265,0,0.014198567,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Unassigned,Unassigned
+ASV_4,2,0.048376944,0,0,0.000898109,0.012318763,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Mizugakiibacter,Unassigned
+ASV_17,2,0,0.01819817,0.03015647,0,0.01208866,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Koribacteraceae,Candidatus Koribacter,Unassigned
+ASV_23,2,0,0.02715646,0.01255596,5.50E-05,0.009941847,Bacteria,GAL15,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_27,2,0,0.01374833,0.0207365,0,0.008621208,Bacteria,Chloroflexi,AD3,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_34,2,0,0.002342668,0.0297819,0,0.008031142,Bacteria,Chloroflexi,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_50,2,0,0.005907962,0.000963892,0.023071785,0.00748591,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Methylovirgula,Unassigned
+ASV_21,2,0.0236506,0,0,0.00426347,0.006978518,Bacteria,Deinococcota,Deinococci,Thermales,Thermaceae,Meiothermus,Unassigned
+ASV_33,2,0,0.01213498,0.01551238,0,0.00691184,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_30,2,0,0.013045869,0.013809778,0.000253547,0.006777299,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,Unassigned,Unassigned
+ASV_18,2,0.025819098,0,0.000124548,0.001083058,0.006756676,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrososphaera,Unassigned
+ASV_38,2,0,0.018561172,0.004708602,0,0.005817444,Bacteria,Acidobacteriota,FFCH5909,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_40,2,0,0.008128824,0.014928825,0.000133497,0.005797786,Bacteria,Chloroflexi,Anaerolineae,SBR1031,A4b,Unassigned,Unassigned
+ASV_32,2,0.01516401,2.29E-05,3.11E-05,0.007116839,0.005583723,Bacteria,Chloroflexi,KD4-96,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_49,2,0,0.006390766,0.012122811,0.000222485,0.004684016,Bacteria,Planctomycetota,Planctomycetes,Isosphaerales,Isosphaeraceae,Unassigned,Unassigned
+ASV_46,2,0,0.008959936,0.009646924,0,0.004651715,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_54,2,0,0.00407236,0.01297427,0,0.004261658,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_37,2,0.011992626,0.004270091,0.000265055,0,0.004131943,Bacteria,Chloroflexi,Anaerolineae,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_72,2,0.003112733,0.000208953,0.000373653,0.01202765,0.003930747,Bacteria,Acidobacteriota,Blastocatellia,Pyrinomonadales,Pyrinomonadaceae,Pyrinomonas,Unassigned
+ASV_58,2,0.003050111,0.00605847,0.004096478,0,0.003301265,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Mizugakiibacter,Unassigned
+ASV_94,2,0.00107229,0.000139127,0.003325715,0.008630854,0.003291997,Bacteria,Acidobacteriota,Blastocatellia,Nov-24,Unassigned,Unassigned,Unassigned
+ASV_65,2,0,0.004961231,0.007976287,0,0.00323438,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_83,2,0,0.002013188,0.01037756,3.93E-05,0.003107503,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_81,2,0,0.006070865,0.005238685,0.000683189,0.002998185,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,Unassigned,Unassigned
+ASV_66,2,0,0.009139116,0.002790371,0,0.002982372,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_70,2,0,0.007319929,0.003548281,0,0.002717053,Bacteria,Myxococcota,Polyangia,Haliangiales,Haliangiaceae,Haliangium,Unassigned
+ASV_124,2,0.000493825,0.000512628,0.00200455,0.007494014,0.002626254,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_82,2,0,0.004092953,0.006363869,0,0.002614206,Bacteria,Acidobacteriota,Acidobacteriae,Bryobacterales,Bryobacteraceae,Bryobacter,Unassigned
+ASV_78,2,0.000124014,0.007851565,0.001506345,0.000790716,0.00256816,Bacteria,Chloroflexi,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_84,2,0,0.003269276,0.006952482,4.71E-05,0.002567219,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_77,2,0,0.007286566,0.002742024,3.14E-05,0.002515,Bacteria,Acidobacteriota,Holophagae,Subgroup 7,Unassigned,Unassigned,Unassigned
+ASV_95,2,0,0.002588082,0.006886195,0,0.002368569,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Hyphomicrobiaceae,Pedomicrobium,Unassigned
+ASV_90,2,0,0.003481489,0.005881968,4.71E-05,0.002352643,Bacteria,Acidobacteriota,Acidobacteriae,Solibacterales,Solibacteraceae,Candidatus Solibacter,Unassigned
+ASV_99,2,6.70E-06,0.002911847,0.005595625,0,0.002128542,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,1921-2,Unassigned
+ASV_117,2,0,0.000534162,0.006691649,0,0.001806453,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_120,2,0,0.003095495,0.003991255,0,0.001771688,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_110,2,0,0.004306576,0.002284544,0.000171673,0.001690698,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_121,2,0,0.002329862,0.004312117,0,0.001660495,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_113,2,0,0.00419744,0.001715245,0.000612514,0.0016313,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,1921-2,Unassigned
+ASV_139,2,0,0.001053599,0.004334727,0.000812635,0.00155024,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Hyphomicrobiaceae,Pedomicrobium,Unassigned
+ASV_88,2,0.004968584,0.000200352,0.000106163,0.000849187,0.001531072,Bacteria,Actinobacteriota,Acidimicrobiia,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_189,2,0,0,0.001847734,0.003898402,0.001436534,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiales Incertae Sedis,Alsobacter,metallidurans
+ASV_135,2,0,0.002111331,0.003139936,0.000374294,0.00140639,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_203,2,0,0,0.001398532,0.003976674,0.001343802,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Unassigned,Unassigned
+ASV_167,2,0,0.000627036,0.003464941,0.001121579,0.001303389,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_129,2,0,0.003991968,0.000692509,0.000392637,0.001269279,Bacteria,Verrucomicrobiota,Verrucomicrobiae,Chthoniobacterales,Chthoniobacteraceae,Chthoniobacter,Unassigned
+ASV_105,2,0.003825991,0.000365601,0,0.000868774,0.001265092,Bacteria,Actinobacteriota,Thermoleophilia,Gaiellales,Unassigned,Unassigned,Unassigned
+ASV_176,2,0.000671213,0.000370602,0.00142775,0.002185641,0.001163802,Bacteria,Acidobacteriota,Blastocatellia,Pyrinomonadales,Pyrinomonadaceae,RB41,Unassigned
+ASV_160,2,0.000680268,0.001257108,0.002286123,0.000125644,0.001087286,Bacteria,Proteobacteria,Alphaproteobacteria,Caulobacterales,Caulobacteraceae,Unassigned,Unassigned
+ASV_149,2,0.001543907,0.000811627,0.001794827,0.000191514,0.001085469,Bacteria,Planctomycetota,Planctomycetes,Isosphaerales,Isosphaeraceae,Unassigned,Unassigned
+ASV_163,2,0,0.001822607,0.002486659,0,0.001077317,Bacteria,Acidobacteriota,FFCH5909,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_173,2,9.51E-05,0.001005175,0.00301423,0.000179946,0.001073619,Bacteria,Chloroflexi,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_122,2,0.003409855,0,0,0.000879508,0.001072341,Bacteria,Acidobacteriota,Blastocatellia,Blastocatellales,Blastocatellaceae,Unassigned,Unassigned
+ASV_147,2,0.002513351,0,0,0.001194921,0.000927068,Bacteria,Bacteroidota,Bacteroidia,Chitinophagales,Chitinophagaceae,Flaviaesturariibacter,Unassigned
+ASV_195,2,0.001527102,9.28E-05,0.000120239,0.001911083,0.000912796,Bacteria,Proteobacteria,Alphaproteobacteria,Sphingomonadales,Sphingomonadaceae,Sphingomonas,Unassigned
+ASV_174,2,0,0.001981387,0.001603603,0,0.000896248,Bacteria,Planctomycetota,Pla4 lineage,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_175,2,0,0.00251691,0.000920737,0.000109938,0.000886896,Bacteria,Actinobacteriota,Thermoleophilia,Solirubrobacterales,Solirubrobacteraceae,Unassigned,Unassigned
+ASV_218,2,0,0.000653326,0.002367477,0,0.000755201,Bacteria,Firmicutes,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_217,2,0,0.001103743,0.001788276,0,0.000723005,Bacteria,Myxococcota,Polyangia,Haliangiales,Haliangiaceae,Haliangium,Unassigned
+ASV_227,2,0,0.001219845,0.00159126,0,0.000702776,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_302,2,0,0,0.001893577,0.000439754,0.000583333,Bacteria,Proteobacteria,Gammaproteobacteria,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_269,2,0,0.001425326,0.000724177,0.000141349,0.000572713,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Methylocapsa,Unassigned
+ASV_267,2,0,0.000843242,0.001430625,0,0.000568467,Bacteria,Planctomycetota,Pla4 lineage,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_265,2,0,0.00084996,0.001411937,0,0.000565474,Bacteria,Myxococcota,Myxococcia,Myxococcales,Myxococcaceae,P3OB-42,Unassigned
+ASV_253,2,0,0.001165241,0.001095872,0,0.000565278,Bacteria,Chloroflexi,Anaerolineae,SBR1031,Unassigned,Unassigned,Unassigned
+ASV_241,2,0,0.001394002,0.000777986,7.07E-05,0.000560666,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_275,2,0,0.001202005,0.000455359,0.000525786,0.000545787,Bacteria,Armatimonadota,Armatimonadia,Armatimonadales,Unassigned,Unassigned,Unassigned
+ASV_336,2,2.34E-05,0.000112494,0.000937509,0.001095095,0.000542133,Bacteria,Myxococcota,Polyangia,Polyangiales,Polyangiaceae,Pajaroellobacter,Unassigned
+ASV_281,2,0,0.000871297,0.001110046,0.000125644,0.000526747,Bacteria,Firmicutes,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_309,2,0,0.000513091,0.001269801,0.00011811,0.00047525,Bacteria,Myxococcota,Polyangia,Haliangiales,Haliangiaceae,Haliangium,Unassigned
+ASV_343,2,0,0.000713878,0.000815566,0,0.000382361,Bacteria,Myxococcota,Polyangia,MSB-4B10,Unassigned,Unassigned,Unassigned
+ASV_356,2,0,0.000526392,0.000812788,0.000102086,0.000360316,Bacteria,Myxococcota,Myxococcia,Myxococcales,Anaeromyxobacteraceae,Anaeromyxobacter,Unassigned
+ASV_7,1,0.0469392,0,0,0,0.0117348,Bacteria,Bacteroidota,Bacteroidia,Chitinophagales,Chitinophagaceae,Unassigned,Unassigned
+ASV_19,1,0.02561715,0,0,0,0.006404288,Archaea,Crenarchaeota,Nitrososphaeria,SCGC AB-179-E04,Unassigned,Unassigned,Unassigned
+ASV_25,1,0.022988639,0,0,0.000101419,0.005772514,Bacteria,Verrucomicrobiota,Verrucomicrobiae,Chthoniobacterales,Chthoniobacteraceae,Candidatus Udaeobacter,Unassigned
+ASV_48,1,0,0.00047624,0.020651559,0,0.00528195,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,Unassigned,Unassigned
+ASV_75,1,0.000780016,0,0,0.020342114,0.005280532,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Burkholderiaceae,Burkholderia-Caballeronia-Paraburkholderia,Unassigned
+ASV_44,1,0,0.02014997,0,0,0.005037493,Bacteria,Chloroflexi,AD3,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_29,1,0.015228,0,0,0,0.003807,Bacteria,Chloroflexi,Chloroflexia,Thermomicrobiales,Thermomicrobiaceae,Nitrolancea,Unassigned
+ASV_36,1,0.01369926,0,0,0,0.003424815,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrocosmicus,Unassigned
+ASV_39,1,0.01319783,0,0,0,0.003299458,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrososphaera,Unassigned
+ASV_52,1,0,0.012749226,0.00044301,0,0.003298059,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_131,1,8.43E-06,0,0,0.0129847,0.003248282,Bacteria,Chloroflexi,Anaerolineae,Thermoflexales,Thermoflexaceae,Thermoflexus,Unassigned
+ASV_80,1,0,0.000383397,0.0125302,4.06E-05,0.003238541,Bacteria,Acidobacteriota,Holophagae,Subgroup 7,Unassigned,Unassigned,Unassigned
+ASV_41,1,0.012543135,0,0,0.000324222,0.003216839,Bacteria,Proteobacteria,Gammaproteobacteria,Gammaproteobacteria Incertae Sedis,Unknown Family,Acidibacter,Unassigned
+ASV_60,1,0,0.011971871,0.000341707,0,0.003078395,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,JG30a-KF-32,Unassigned
+ASV_118,1,0.000140851,0,0.000380193,0.011559062,0.003020026,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Pseudolabrys,taiwanensis
+ASV_103,1,0,0,0.007764402,0.003575806,0.002835052,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_69,1,0,0.0107375,0,0,0.002684375,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_55,1,0.009515039,0,0,0,0.00237876,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Rhodanobacter,Unassigned
+ASV_57,1,0.00922062,0,0,0,0.002305155,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Chujaibacter,Unassigned
+ASV_87,1,0,0.008425519,0.000228382,0.000382466,0.002259092,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,G12-WMSP1,Unassigned
+ASV_62,1,0.008729975,0,0,0,0.002182494,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_53,1,0.008107299,0,0,0,0.002026825,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_100,1,0,0.007008714,0.000385605,0.000561893,0.001989053,Bacteria,Actinobacteriota,Thermoleophilia,Gaiellales,Unassigned,Unassigned,Unassigned
+ASV_196,1,0,0,0,0.007755424,0.001938856,Bacteria,Fervidibacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_56,1,0.007492741,0,0,0,0.001873185,Bacteria,Bacteroidota,Kryptonia,Kryptoniales,BSV26,Unassigned,Unassigned
+ASV_97,1,0,0.006303292,0.000410941,0.000240798,0.001738758,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,FCPS473,Unassigned
+ASV_86,1,0.006246723,0.000394533,0,7.85E-05,0.001679946,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_91,1,0.006664359,0,0,0,0.00166609,Bacteria,Actinobacteriota,Actinobacteria,Frankiales,Frankiaceae,Jatrophihabitans,Unassigned
+ASV_106,1,0,0.0061409,0.000432866,8.64E-05,0.001665036,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Acidobacteriaceae (Subgroup 1),Granulicella,Unassigned
+ASV_193,1,0,0,0.000217964,0.006208735,0.001606675,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Pseudolabrys,Unassigned
+ASV_130,1,0,0,0.006018894,0,0.001504724,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_89,1,0.004505101,0.001267075,0,0.000235579,0.001501939,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,FCPS473,Unassigned
+ASV_115,1,0,0.005328919,0.000559832,4.71E-05,0.001483967,Bacteria,Proteobacteria,Alphaproteobacteria,Sphingomonadales,Sphingomonadaceae,Unassigned,Unassigned
+ASV_238,1,0,2.94E-05,0,0.005672618,0.001425517,Bacteria,Chloroflexi,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_125,1,0.000130794,0.00423488,0.001124501,0,0.001372544,Bacteria,Proteobacteria,Alphaproteobacteria,Sphingomonadales,Sphingomonadaceae,Novosphingobium,Unassigned
+ASV_219,1,0,0,0,0.005306425,0.001326606,Bacteria,Proteobacteria,Alphaproteobacteria,Sphingomonadales,Sphingomonadaceae,Sphingomonas,ginsengisoli
+ASV_79,1,0.005304328,0,0,0,0.001326082,Bacteria,Actinobacteriota,Actinobacteria,Frankiales,Frankiaceae,Jatrophihabitans,Unassigned
+ASV_109,1,0.005210071,7.90E-05,0,0,0.001322272,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Comamonadaceae,Piscinibacter,Unassigned
+ASV_96,1,0.00512151,0,0,0,0.001280378,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_116,1,0.005058606,0,0,0,0.001264652,Bacteria,Armatimonadota,Armatimonadia,Armatimonadales,Unassigned,Unassigned,Unassigned
+ASV_188,1,0.000141577,0.000779969,0.000303247,0.00383214,0.001264233,Bacteria,Proteobacteria,Alphaproteobacteria,Reyranellales,Reyranellaceae,Reyranella,Unassigned
+ASV_136,1,0,0.003264326,0.001397686,0.000102086,0.001191025,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Unassigned,Unassigned,Unassigned
+ASV_184,1,0,0,0.002727256,0.001990855,0.001179528,Bacteria,Deinococcota,Deinococci,Deinococcales,Deinococcaceae,Unassigned,Unassigned
+ASV_164,1,0,0,0.004471016,0,0.001117754,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_162,1,0,0.004407793,0,0,0.001101948,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Methylocapsa,Unassigned
+ASV_108,1,0.004385441,0,0,0,0.00109636,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrososphaera,Unassigned
+ASV_144,1,0.000166776,0.004059429,0.000143569,0,0.001092444,Bacteria,Deinococcota,Deinococci,Deinococcales,Deinococcaceae,Deinococcus,Unassigned
+ASV_145,1,0,0.003821645,0.000324203,0.000177657,0.001080876,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Rhodanobacter,Unassigned
+ASV_146,1,0,0.003971669,2.17E-05,0.000329815,0.001080786,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_157,1,0,0.00422481,0,9.42E-05,0.001079761,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_148,1,0,0.002595422,0.001699388,0,0.001073703,Bacteria,Proteobacteria,Gammaproteobacteria,WD260,Unassigned,Unassigned,Unassigned
+ASV_137,1,0,0.004276161,0,0,0.00106904,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_140,1,0,0.00412567,0,5.50E-05,0.00104516,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_152,1,0,0.002890673,0.001216327,0,0.00102675,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_158,1,0,0.002406222,0.001161457,0.000530045,0.001024431,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,JG30-KF-AS9,Unassigned,Unassigned
+ASV_104,1,0.004007794,0,0,0,0.001001949,Bacteria,Firmicutes,YNPFFP2,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_119,1,0.003955449,0,0,0,0.000988862,Archaea,Crenarchaeota,Nitrososphaeria,Nitrosotaleales,Nitrosotaleaceae,Unassigned,Unassigned
+ASV_198,1,0,8.16E-05,0.003839466,0,0.000980256,Bacteria,Armatimonadota,Fimbriimonadia,Fimbriimonadales,Fimbriimonadaceae,Unassigned,Unassigned
+ASV_138,1,0.003871476,0,0,0,0.000967869,Bacteria,Gemmatimonadota,Gemmatimonadetes,Gemmatimonadales,Gemmatimonadaceae,Unassigned,Unassigned
+ASV_133,1,0.0031572,0,0,0.000689648,0.000961712,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Fischerella PCC-9339,Unassigned
+ASV_207,1,0,0.000382833,0.003129687,0.000133497,0.000911504,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,FCPS473,Unassigned
+ASV_223,1,0,0.00017865,0.003366425,0,0.000886269,Bacteria,Planctomycetota,Planctomycetes,Isosphaerales,Isosphaeraceae,Singulisphaera,Unassigned
+ASV_142,1,0.00347733,0,0,0,0.000869333,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_206,1,0,0.000611879,0.00285244,0,0.00086608,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,1921-2,Unassigned
+ASV_172,1,0,0.002970385,0.000477156,0,0.000861885,Bacteria,Actinobacteriota,Thermoleophilia,Solirubrobacterales,Solirubrobacteraceae,Unassigned,Unassigned
+ASV_216,1,0,0.000737383,0.002574373,0.000117791,0.000857387,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Chthonomonadaceae,Chthonomonas,Unassigned
+ASV_222,1,2.28E-05,0.000278841,0.002922788,3.93E-05,0.000815929,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Fimbriiglobus,Unassigned
+ASV_182,1,0,0.003241305,0,0,0.000810326,Bacteria,Acidobacteriota,Holophagae,Subgroup 7,Unassigned,Unassigned,Unassigned
+ASV_128,1,0.003092241,0,0,0,0.00077306,Bacteria,Firmicutes,Bacilli,Alicyclobacillales,Alicyclobacillaceae,Acidibacillus,Unassigned
+ASV_339,1,0,0.000200566,0,0.002868308,0.000767218,Bacteria,Proteobacteria,Gammaproteobacteria,Pseudomonadales,Pseudomonadaceae,Pseudomonas,Unassigned
+ASV_200,1,0,0.002490147,0.00055814,0,0.000762072,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_141,1,0.00303007,0,0,0,0.000757518,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,Unassigned,Unassigned
+ASV_192,1,0,0.00290219,0,0,0.000725548,Bacteria,Acidobacteriota,Blastocatellia,Blastocatellales,Blastocatellaceae,Unassigned,Unassigned
+ASV_221,1,0,0.000825419,0.001896785,8.64E-05,0.000702146,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_213,1,0,0.002699375,8.71E-05,0,0.000696606,Bacteria,Methylomirabilota,Methylomirabilia,Rokubacteriales,Unassigned,Unassigned,Unassigned
+ASV_201,1,0,0.002713698,0,6.28E-05,0.00069413,Bacteria,Acidobacteriota,Blastocatellia,Pyrinomonadales,Pyrinomonadaceae,RB41,Unassigned
+ASV_178,1,0.002756933,0,0,0,0.000689233,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Dokdonella,Unassigned
+ASV_274,1,0,0,0.00260845,0.000117791,0.00068156,Bacteria,Proteobacteria,Alphaproteobacteria,Reyranellales,Reyranellaceae,Reyranella,Unassigned
+ASV_346,1,0,0,0,0.002714353,0.000678588,Bacteria,Proteobacteria,Alphaproteobacteria,Reyranellales,Reyranellaceae,Reyranella,Unassigned
+ASV_153,1,0.00269897,0,0,0,0.000674743,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Chthonomonadaceae,Chthonomonas,Unassigned
+ASV_347,1,0,0,0,0.002689491,0.000672373,Bacteria,Cyanobacteria,Vampirivibrionia,Obscuribacterales,Obscuribacteraceae,Unassigned,Unassigned
+ASV_239,1,0,0.00113214,0.000777001,0.000753864,0.000665751,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,1921-2,Unassigned
+ASV_225,1,0,0.002483027,0.000163899,0,0.000661731,Bacteria,Armatimonadota,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_155,1,0.002620541,0,0,0,0.000655135,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,JG30-KF-AS9,Unassigned,Unassigned
+ASV_143,1,0.002600153,0,0,0,0.000650038,Bacteria,Chloroflexi,Anaerolineae,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_226,1,6.70E-05,0.001642202,0.000637635,0.000242716,0.000647377,Bacteria,Myxococcota,Polyangia,Haliangiales,Haliangiaceae,Haliangium,Unassigned
+ASV_242,1,0,0.000330774,0.002255325,0,0.000646525,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_156,1,0.002494643,0,0,7.07E-05,0.000641329,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,JG30-KF-AS9,Unassigned,Unassigned
+ASV_159,1,0.002260748,3.60E-05,0.000264671,0,0.000640353,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_214,1,0,0.002280787,0.000253357,0,0.000633536,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_171,1,0.00250492,0,0,0,0.00062623,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Mizugakiibacter,Unassigned
+ASV_403,1,0,0,0,0.002485687,0.000621422,Bacteria,Deinococcota,Deinococci,Thermales,Thermaceae,Thermus,Unassigned
+ASV_318,1,5.78E-05,0.000226016,0.000596496,0.001590668,0.000617741,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_215,1,0,0.001975771,0.000470998,0,0.000611692,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Nostoc PCC-73102,Unassigned
+ASV_273,1,0,0.00026001,0.002184187,0,0.000611049,Bacteria,Myxococcota,Polyangia,Polyangiales,Polyangiaceae,Pajaroellobacter,Unassigned
+ASV_191,1,0.001277474,0,0,0.001115607,0.00059827,Archaea,Crenarchaeota,Nitrososphaeria,SCGC AB-179-E04,Unassigned,Unassigned,Unassigned
+ASV_229,1,0,0.002075763,0.00025758,0,0.000583336,Bacteria,Proteobacteria,Alphaproteobacteria,Caulobacterales,Caulobacteraceae,Phenylobacterium,Unassigned
+ASV_315,1,0.000364169,0.000114523,0.00041517,0.001427718,0.000580395,Bacteria,Chloroflexi,SHA-26,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_248,1,0,0.002048091,9.46E-05,0.00016227,0.00057625,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_377,1,0,0,0,0.002239655,0.000559914,Bacteria,Proteobacteria,Alphaproteobacteria,Sphingomonadales,Sphingomonadaceae,Sandarakinorhabdus,Unassigned
+ASV_252,1,0,0.00151619,0.000595389,0,0.000527895,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Fimbriiglobus,Unassigned
+ASV_186,1,0.001763665,0.000333752,0,0,0.000524354,Bacteria,Nitrospirota,Nitrospiria,Nitrospirales,Nitrospiraceae,Nitrospira,Unassigned
+ASV_250,1,1.67E-05,0.002065196,0,0,0.000520484,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Methylobacterium-Methylorubrum,Unassigned
+ASV_168,1,0.002081467,0,0,0,0.000520367,Bacteria,Deinococcota,Deinococci,Thermales,Thermaceae,Meiothermus,Unassigned
+ASV_283,1,0,0.002066648,0,0,0.000516662,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,JG30a-KF-32,Unassigned
+ASV_285,1,0,0.001220402,0.000780399,0,0.0005002,Bacteria,GAL15,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_401,1,0,0,7.27E-05,0.00190329,0.000493986,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Nitrosomonadaceae,mle1-7,Unassigned
+ASV_272,1,0,0.001960063,0,0,0.000490016,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,JG30-KF-AS9,Unassigned,Unassigned
+ASV_278,1,0,0.00175439,0.000202686,0,0.000489269,Bacteria,Chloroflexi,AD3,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_279,1,0,0.001802279,0.000145688,0,0.000486992,Bacteria,Acidobacteriota,Acidobacteriae,Solibacterales,Solibacteraceae,Candidatus Solibacter,Unassigned
+ASV_342,1,0,0.000448275,0.00043134,0.001066291,0.000486477,Bacteria,Dependentiae,Babeliae,Babeliales,Vermiphilaceae,Unassigned,Unassigned
+ASV_299,1,0,0.000129124,0.001815191,0,0.000486079,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiales Incertae Sedis,Bauldia,Unassigned
+ASV_385,1,0,0,0.00043773,0.001492022,0.000482438,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Unassigned,Unassigned,Unassigned
+ASV_251,1,0,0.001841363,0,0,0.000460341,Archaea,Crenarchaeota,Nitrososphaeria,Caldiarchaeales,Terrestrial Hot Spring Gp(THSCG),Unassigned,Unassigned
+ASV_455,1,0,0,0.000114172,0.001724602,0.000459693,Bacteria,Firmicutes,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_317,1,0.000567759,0,0,0.001239082,0.00045171,Bacteria,Planctomycetota,Planctomycetes,Isosphaerales,Isosphaeraceae,Unassigned,Unassigned
+ASV_209,1,0.001644566,2.22E-05,0,0.000139205,0.0004515,Bacteria,Firmicutes,Sulfobacillia,Sulfobacillales,Sulfobacillaceae,Unassigned,Unassigned
+ASV_319,1,0,7.21E-05,0.001527844,0.000188466,0.000447114,Bacteria,Chloroflexi,Anaerolineae,SBR1031,Unassigned,Unassigned,Unassigned
+ASV_228,1,0.001762412,0,0,0,0.000440603,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_320,1,0,0.000601077,0.001104552,0,0.000426407,Bacteria,Planctomycetota,BD7-11,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_294,1,0,0.001202307,0.000496969,0,0.000424819,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_233,1,0.001491356,7.53E-05,5.80E-05,7.07E-05,0.000423819,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_231,1,0.001687583,0,0,0,0.000421896,Bacteria,Chloroflexi,KD4-96,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_290,1,0,0.001341393,0.000339938,0,0.000420333,Bacteria,Chloroflexi,Chloroflexia,Thermomicrobiales,JG30-KF-CM45,Unassigned,Unassigned
+ASV_296,1,0,0.001456048,0.000225214,0,0.000420316,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_244,1,0.001115104,6.54E-05,0.00013493,0.00035201,0.000416871,Bacteria,Actinobacteriota,Acidimicrobiia,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_386,1,0,2.94E-05,0.00097384,0.000664179,0.000416867,Bacteria,Planctomycetota,BD7-11,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_264,1,0.001652497,0,0,0,0.000413124,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Rhodanobacter,Unassigned
+ASV_350,1,0.000455919,0,0.000119133,0.001063335,0.000409597,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Bradyrhizobium,Unassigned
+ASV_384,1,0,0.000291012,0.000756555,0.000590548,0.000409529,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_497,1,0,0,0,0.001620873,0.000405218,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_292,1,0,0.001585124,2.96E-05,0,0.000403671,Bacteria,Verrucomicrobiota,Verrucomicrobiae,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_234,1,0.001555182,0,0,0,0.000388796,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrososphaera,Unassigned
+ASV_330,1,0,0.000626872,0.000887618,3.93E-05,0.000388439,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Chthonomonadaceae,Chthonomonas,Unassigned
+ASV_332,1,1.34E-05,0.000873695,0.000544991,0.000119095,0.000387793,Bacteria,Chloroflexi,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_297,1,0,0.001276997,0.000270247,0,0.000386811,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_210,1,0.001540856,0,0,0,0.000385214,Bacteria,Firmicutes,Sulfobacillia,Sulfobacillales,Sulfobacillaceae,Unassigned,Unassigned
+ASV_389,1,0,4.84E-05,0.001469045,0,0.000379362,Bacteria,Dependentiae,Babeliae,Babeliales,Vermiphilaceae,Unassigned,Unassigned
+ASV_255,1,0.001504131,0,0,0,0.000376033,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Rhodanobacter,Unassigned
+ASV_337,1,0,0.001003241,0.000496236,0,0.000374869,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_311,1,0.000197515,0.001194027,9.46E-05,0,0.000371545,Bacteria,Actinobacteriota,Actinobacteria,Frankiales,Frankiaceae,Jatrophihabitans,Unassigned
+ASV_361,1,0,0.000217849,0.00110344,0.000149202,0.000367623,Bacteria,Acidobacteriota,Acidobacteriae,Subgroup 2,Unassigned,Unassigned,Unassigned
+ASV_263,1,0.001468522,0,0,0,0.000367131,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Acidobacteriaceae (Subgroup 1),Unassigned,Unassigned
+ASV_325,1,0,0.00146254,0,0,0.000365635,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_240,1,0.001461562,0,0,0,0.000365391,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Mizugakiibacter,Unassigned
+ASV_522,1,0,0,0,0.001440148,0.000360037,Archaea,Crenarchaeota,Nitrososphaeria,Caldiarchaeales,Terrestrial Hot Spring Gp(THSCG),Unassigned,Unassigned
+ASV_464,1,0,1.72E-05,0,0.001421347,0.000359631,Bacteria,Proteobacteria,Alphaproteobacteria,Elsterales,URHD0088,Unassigned,Unassigned
+ASV_323,1,0,0.001230264,0.000207585,0,0.000359462,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_256,1,0.001422301,0,0,0,0.000355575,Bacteria,Deinococcota,Deinococci,Deinococcales,Deinococcaceae,Deinococcus,Unassigned
+ASV_260,1,0.001402685,0,0,0,0.000350671,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Mizugakiibacter,Unassigned
+ASV_357,1,0,0,0.00137474,0,0.000343685,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Rhodoplanes,Unassigned
+ASV_352,1,0,0.001256261,0.000118233,0,0.000343624,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Unassigned,Unassigned
+ASV_367,1,0,0.000349116,0.001020064,0,0.000342295,Bacteria,Chloroflexi,Anaerolineae,Caldilineales,Caldilineaceae,Unassigned,Unassigned
+ASV_333,1,4.09E-06,0.001333534,0,0,0.000334405,Bacteria,Proteobacteria,Alphaproteobacteria,Sphingomonadales,Sphingomonadaceae,Novosphingobium,Unassigned
+ASV_268,1,0.001326793,0,0,0,0.000331698,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Pseudolabrys,Unassigned
+ASV_390,1,0,0,0.001325937,0,0.000331484,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,Methylovirgula,Unassigned
+ASV_529,1,0,0,0,0.001324224,0.000331056,Bacteria,Deinococcota,Deinococci,Thermales,Thermaceae,Meiothermus,Unassigned
+ASV_334,1,0,0.001322408,0,0,0.000330602,Bacteria,Proteobacteria,Alphaproteobacteria,Caulobacterales,Caulobacteraceae,Phenylobacterium,Unassigned
+ASV_481,1,2.73E-05,0,0,0.001287502,0.000328702,Bacteria,Proteobacteria,Alphaproteobacteria,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_354,1,0,0.001107626,0,0.000172412,0.00032001,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_492,1,0,0,0,0.001279997,0.000319999,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Stigonema SAG 48.90,Unassigned
+ASV_383,1,0,0.000346648,0.000930321,0,0.000319242,Bacteria,RCP2-54,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_335,1,0,0.001263642,0,0,0.000315911,Bacteria,Acidobacteriota,Holophagae,Subgroup 7,Unassigned,Unassigned,Unassigned
+ASV_249,1,0.001262962,0,0,0,0.000315741,Archaea,Crenarchaeota,Nitrososphaeria,SCGC AB-179-E04,Unassigned,Unassigned,Unassigned
+ASV_338,1,0,0.001212075,4.67E-05,0,0.000314695,Bacteria,Actinobacteriota,Thermoleophilia,Solirubrobacterales,Solirubrobacteraceae,Conexibacter,Unassigned
+ASV_276,1,0.001127221,1.96E-05,0,8.11E-05,0.000306997,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Unassigned,Unassigned,Unassigned
+ASV_246,1,0.001224448,0,0,0,0.000306112,Bacteria,Bacteroidota,Kryptonia,Kryptoniales,BSV26,Unassigned,Unassigned
+ASV_284,1,0.001221409,0,0,0,0.000305352,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Afipia,Unassigned
+ASV_327,1,0,0.001215342,0,0,0.000303836,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,1921-3,Unassigned
+ASV_365,1,0.000203508,0.000356749,0.000639215,0,0.000299868,Bacteria,Chloroflexi,Ktedonobacteria,B10-SB3A,Unassigned,Unassigned,Unassigned
+ASV_443,1,0.000299759,0,0,0.000899469,0.000299807,Bacteria,Deinococcota,Deinococci,Thermales,Thermaceae,Thermus,Unassigned
+ASV_366,1,0,0.001159418,0,3.93E-05,0.00029967,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_259,1,0.001181741,1.59E-05,0,0,0.00029941,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_371,1,0,0.000658711,0.000435929,9.13E-05,0.000296479,Bacteria,Myxococcota,Polyangia,Polyangiales,Polyangiaceae,Pajaroellobacter,Unassigned
+ASV_300,1,0.001063755,0,0,0.000119929,0.000295921,Bacteria,Actinobacteriota,Thermoleophilia,Solirubrobacterales,Solirubrobacteraceae,Conexibacter,Unassigned
+ASV_280,1,0.001166986,0,0,0,0.000291747,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_381,1,0,0.000660223,0.000499644,0,0.000289967,Bacteria,Chloroflexi,AD3,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_502,1,0,2.06E-05,0.000237592,0.000897472,0.000288919,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_409,1,0,0.000291484,0.000843618,0,0.000283775,Bacteria,Cyanobacteria,Cyanobacteriia,Cyanobacteriales,Nostocaceae,Stigonema SAG 48.90,Unassigned
+ASV_440,1,0,0,0.001123255,0,0.000280814,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_419,1,0,0.000102323,0.000890222,0.000125644,0.000279547,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_310,1,0.000677309,0.000417011,0,0,0.00027358,Bacteria,Actinobacteriota,Acidimicrobiia,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_447,1,0,0,0.001094224,0,0.000273556,Bacteria,Acidobacteriota,Acidobacteriae,Solibacterales,Solibacteraceae,Candidatus Solibacter,Unassigned
+ASV_410,1,0,0.000296573,0.000797577,0,0.000273538,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_373,1,0,0.000915034,0.00017735,0,0.000273096,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Oxalobacteraceae,Actimicrobium,Unassigned
+ASV_512,1,0,0,0.000178143,0.000891272,0.000267354,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Comamonadaceae,Rhizobacter,Unassigned
+ASV_382,1,0,0.001061013,0,0,0.000265253,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_360,1,0,0.001041231,0,0,0.000260308,Bacteria,Proteobacteria,Gammaproteobacteria,Xanthomonadales,Rhodanobacteraceae,Rhodanobacter,Unassigned
+ASV_402,1,0,0.000640249,0.000392808,0,0.000258264,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_375,1,0,0.00094737,8.12E-05,0,0.000257149,Bacteria,Acidobacteriota,Acidobacteriae,Bryobacterales,Bryobacteraceae,Bryobacter,Unassigned
+ASV_400,1,0,0.001027927,0,0,0.000256982,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Burkholderiaceae,Limnobacter,Unassigned
+ASV_541,1,0,0,7.56E-05,0.000932825,0.000252116,Bacteria,Proteobacteria,Alphaproteobacteria,Elsterales,Unassigned,Unassigned,Unassigned
+ASV_396,1,0,0.000921348,8.45E-05,0,0.00025145,Bacteria,Proteobacteria,Alphaproteobacteria,Acetobacterales,Acetobacteraceae,Unassigned,Unassigned
+ASV_395,1,0,0.000878605,0.000122456,0,0.000250265,Bacteria,Nitrospirota,Nitrospiria,Nitrospirales,Nitrospiraceae,Nitrospira,Unassigned
+ASV_391,1,0,0.000990345,0,0,0.000247586,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Beijerinckiaceae,alphaI cluster,Unassigned
+ASV_534,1,0,0,0.000163359,0.000816686,0.000245011,Bacteria,Acidobacteriota,Acidobacteriae,Solibacterales,Solibacteraceae,Candidatus Solibacter,Unassigned
+ASV_459,1,0,0,0.000970144,0,0.000242536,Archaea,Crenarchaeota,Nitrososphaeria,Nitrososphaerales,Nitrososphaeraceae,Candidatus Nitrososphaera,Unassigned
+ASV_393,1,0,0.00096498,0,0,0.000241245,Bacteria,Myxococcota,Polyangia,Polyangiales,Polyangiaceae,Pajaroellobacter,Unassigned
+ASV_503,1,0,0.000199623,0,0.000761716,0.000240335,Archaea,Crenarchaeota,Nitrososphaeria,SCGC AB-179-E04,Unassigned,Unassigned,Unassigned
+ASV_612,1,0,0,3.11E-05,0.000923622,0.00023869,Bacteria,Chloroflexi,TK10,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_388,1,0,0.000948121,0,0,0.00023703,Bacteria,Proteobacteria,Alphaproteobacteria,Caulobacterales,Caulobacteraceae,Unassigned,Unassigned
+ASV_567,1,0,0,0,0.00093381,0.000233452,Bacteria,Proteobacteria,Alphaproteobacteria,Caulobacterales,Caulobacteraceae,Phenylobacterium,Unassigned
+ASV_519,1,0,0.000387805,0,0.000545054,0.000233215,Bacteria,Proteobacteria,Gammaproteobacteria,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_316,1,0.000914146,0,0,0,0.000228536,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Acidobacteriaceae (Subgroup 1),Acidipila-Silvibacterium,Unassigned
+ASV_644,1,0,0,0,0.000909463,0.000227366,Archaea,Crenarchaeota,Nitrososphaeria,Caldiarchaeales,Terrestrial Hot Spring Gp(THSCG),Unassigned,Unassigned
+ASV_441,1,1.00E-05,0.000833479,0,0,0.000210881,Bacteria,Chloroflexi,Ktedonobacteria,Ktedonobacterales,Ktedonobacteraceae,Unassigned,Unassigned
+ASV_485,1,0,8.26E-05,0.000745841,0,0.000207103,Bacteria,Proteobacteria,Alphaproteobacteria,Elsterales,Unassigned,Unassigned,Unassigned
+ASV_457,1,0,0.000293173,0.000530744,0,0.000205979,Bacteria,Proteobacteria,Alphaproteobacteria,Caulobacterales,Caulobacteraceae,Unassigned,Unassigned
+ASV_329,1,0.000813749,0,0,0,0.000203437,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_438,1,0,0.000802779,0,0,0.000200695,Bacteria,WPS-2,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_650,1,0,0,0,0.00077771,0.000194428,Bacteria,Dependentiae,Babeliae,Babeliales,UBA12409,Unassigned,Unassigned
+ASV_448,1,0,0.000777701,0,0,0.000194425,Bacteria,Bacteroidota,Bacteroidia,Cytophagales,Hymenobacteraceae,Hymenobacter,Unassigned
+ASV_645,1,0,0,0,0.000774118,0.000193529,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_446,1,0,0.000654968,0.000118233,0,0.0001933,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_596,1,3.40E-05,0,0,0.000727349,0.000190345,Bacteria,Actinobacteriota,Acidimicrobiia,IMCC26256,Unassigned,Unassigned,Unassigned
+ASV_364,1,0.000761046,0,0,0,0.000190262,Bacteria,Bacteroidota,Bacteroidia,Cytophagales,Hymenobacteraceae,Hymenobacter,Unassigned
+ASV_510,1,0,0,0.000728311,3.14E-05,0.00018993,Bacteria,Proteobacteria,Alphaproteobacteria,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_597,1,3.16E-05,0,0,0.000718193,0.000187448,Bacteria,Actinobacteriota,Thermoleophilia,Gaiellales,Unassigned,Unassigned,Unassigned
+ASV_463,1,0,0.00072114,0,0,0.000180285,Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Comamonadaceae,Piscinibacter,Unassigned
+ASV_462,1,0,0.000707101,0,0,0.000176775,Bacteria,Myxococcota,Myxococcia,Myxococcales,Myxococcaceae,Unassigned,Unassigned
+ASV_655,1,0,0,0,0.000698894,0.000174724,Bacteria,Bacteroidota,Bacteroidia,Sphingobacteriales,Sphingobacteriaceae,Mucilaginibacter,Unassigned
+ASV_460,1,0,0.000667774,0,0,0.000166944,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_674,1,0,0,0,0.000659631,0.000164908,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Unassigned,Unassigned,Unassigned
+ASV_747,1,0,0,0,0.000620974,0.000155244,Bacteria,Cyanobacteria,Vampirivibrionia,Obscuribacterales,Obscuribacteraceae,Unassigned,Unassigned
+ASV_699,1,0,0,0,0.000617411,0.000154353,Bacteria,Chloroflexi,Anaerolineae,SBR1031,Unassigned,Unassigned,Unassigned
+ASV_717,1,0,0.000111302,0,0.000459729,0.000142758,Bacteria,Firmicutes,Bacilli,Lactobacillales,Streptococcaceae,Streptococcus,Unassigned
+ASV_604,1,0,0.000171779,0,0.000392637,0.000141104,Bacteria,Acidobacteriota,Acidobacteriae,Acidobacteriales,Unassigned,Unassigned,Unassigned
+ASV_518,1,0,0.000552607,0,0,0.000138152,Bacteria,Myxococcota,Polyangia,Haliangiales,Haliangiaceae,Haliangium,Unassigned
+ASV_823,1,0,0,0,0.000539682,0.00013492,Bacteria,Firmicutes,Clostridia,Peptostreptococcales-Tissierellales,Family XI,Peptoniphilus,Unassigned
+ASV_628,1,0,0.00018337,0,0.000337668,0.00013026,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Xanthobacteraceae,Unassigned,Unassigned
+ASV_538,1,0,0.000493989,0,0,0.000123497,Bacteria,Proteobacteria,Alphaproteobacteria,Acetobacterales,Acetobacteraceae,Acidiphilium,Unassigned
+ASV_875,1,0,0,0,0.000466527,0.000116632,Bacteria,Acidobacteriota,Blastocatellia,Blastocatellales,Blastocatellaceae,Unassigned,Unassigned
+ASV_557,1,1.83E-05,0.000435123,0,0,0.000113344,Bacteria,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_785,1,0,4.37E-05,0,0.000392637,0.000109091,Bacteria,Cyanobacteria,Cyanobacteriia,Leptolyngbyales,Leptolyngbyaceae,Leptolyngbya PCC-6306,Unassigned
+ASV_570,1,0,0.000427486,0,0,0.000106871,Bacteria,Proteobacteria,Alphaproteobacteria,Acetobacterales,Acetobacteraceae,Unassigned,Unassigned
+ASV_854,1,0,5.08E-05,0,0.000369782,0.000105148,Bacteria,Firmicutes,Bacilli,Lactobacillales,Streptococcaceae,Streptococcus,Unassigned
+ASV_835,1,0,0,0,0.000408343,0.000102086,Bacteria,Actinobacteriota,Thermoleophilia,Gaiellales,Unassigned,Unassigned,Unassigned
+ASV_625,1,0,0.000379529,0,0,9.49E-05,Bacteria,Planctomycetota,Planctomycetes,Gemmatales,Gemmataceae,Unassigned,Unassigned
+ASV_855,1,0,0,0,0.000376932,9.42E-05,Bacteria,Armatimonadota,Chthonomonadetes,Chthonomonadales,Chthonomonadaceae,Chthonomonas,Unassigned
+ASV_969,1,0,0,0,0.000369782,9.24E-05,Bacteria,Chloroflexi,AD3,Unassigned,Unassigned,Unassigned,Unassigned
+ASV_981,1,0,0,0,0.000359788,8.99E-05,Bacteria,Firmicutes,Unassigned,Unassigned,Unassigned,Unassigned,Unassigned
