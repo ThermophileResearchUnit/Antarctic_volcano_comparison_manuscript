@@ -1,0 +1,762 @@
+---
+title: "Community_assembly_volcs"
+author: "Stephen Noell"
+date: "20/01/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation
+library("phyloseq")        # analysis of microbial communities
+library("vegan")           # ecological multivariate analyses
+library("microbiome") #for analyzing phyloseq objects
+library("svglite") #for saving SVGs
+library("ggpubr") #for saving plots
+library("here")            # set the path to the folder
+library("ggplot2")
+library("agricolae")
+library("picante")
+library("NST")
+library("geosphere")
+library("MicroNiche")
+library("EnvStats")
+library("scales")
+library("microeco")
+library("file2meco")
+
+set.seed(57)
+```
+
+```{r}
+#Load version of physeq object, with contaminants removed but not normalized
+volcsf <- readRDS("physeq.volcs.cont")
+volcsf.rel <- readRDS("physeq.volcs.rel")
+
+```
+
+
+```{r community assembly prep}
+
+#transform phyloseq to microeco object
+volcsf_meco <- phyloseq2meco(volcsf)
+volcsf_meco$tax_table <- tidy_taxonomy(volcsf_meco$tax_table)
+
+volcsf_tr <- phyloseq::subset_samples(volcsf, Site == "Erebus - TR")
+volcsf_wc <- phyloseq::subset_samples(volcsf, Site == "Erebus - WC")
+volcsf_mel <- phyloseq::subset_samples(volcsf, Site == "Melbourne")
+volcsf_rit <- phyloseq::subset_samples(volcsf, Site == "Rittmann")
+volcsf_fum <- phyloseq::subset_samples(volcsf, Site == "Erebus - TR" | Site == "Rittmann")
+volcsf_nfum <- phyloseq::subset_samples(volcsf, Site == "Erebus - WC" | Site == "Melbourne")
+
+volcsf_tr_m <- phyloseq2meco(volcsf_tr)
+volcsf_wc_m <- phyloseq2meco(volcsf_wc)
+volcsf_mel_m <- phyloseq2meco(volcsf_mel)
+volcsf_rit_m <- phyloseq2meco(volcsf_rit)
+volcsf_fum_m <- phyloseq2meco(volcsf_fum)
+volcsf_nfum_m <- phyloseq2meco(volcsf_nfum)
+
+```
+
+```{r community assembly}
+#What's the strength of different factors in influencing community assembly at these sites?
+
+assem <- trans_nullmodel$new(volcsf_meco, filter_thres = 0.0005)
+assem$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem$cal_rcbray(runs = 1000)
+assem$cal_process(use_betamntd = TRUE)
+assem_f <- assem$res_process
+assem_f$Site <- "All site types"
+
+#drift, homogenous dispersal are strongest, along with dispersal limitation; selection is weakest
+
+#What about at fumarolic vs. non fumarolic sites?
+assem_fum <- trans_nullmodel$new(volcsf_fum_m, filter_thres = 0.0005)
+assem_fum$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem_fum$cal_rcbray(runs = 1000)
+assem_fum$cal_process(use_betamntd = TRUE)
+assem_fum_f <- assem_fum$res_process
+assem_fum_f$Site <- "Active"
+
+assem_nfum <- trans_nullmodel$new(volcsf_nfum_m, filter_thres = 0.0005)
+assem_nfum$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem_nfum$cal_rcbray(runs = 1000)
+assem_nfum$cal_process(use_betamntd = TRUE)
+assem_nfum_f <- assem_nfum$res_process
+assem_nfum_f$Site <- "Passive"
+
+#what about within TR?
+assem_tr <- trans_nullmodel$new(volcsf_tr_m, filter_thres = 0.0005)
+assem_tr$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem_tr$cal_rcbray(runs = 1000)
+assem_tr$cal_process(use_betamntd = TRUE)
+assem_f_tr <- assem_tr$res_process
+assem_f_tr$Site <- "Erebus - TR"
+
+#46% drift, 21% homogenous dispersal
+
+#within WC?
+assem_wc <- trans_nullmodel$new(volcsf_wc_m, filter_thres = 0.0005)
+assem_wc$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem_wc$cal_rcbray(runs = 1000)
+assem_wc$cal_process(use_betamntd = TRUE)
+assem_f_wc <- assem_wc$res_process
+assem_f_wc$Site <- "Erebus - WC"
+
+#40% drift, 27% homogenous selection, 20% dispersal limitation
+
+#within Melbourne?
+assem_mel <- trans_nullmodel$new(volcsf_mel_m, filter_thres = 0.0005)
+assem_mel$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem_mel$cal_rcbray(runs = 1000)
+assem_mel$cal_process(use_betamntd = TRUE)
+assem_f_mel <- assem_mel$res_process
+assem_f_mel$Site <- "Melbourne"
+
+#33% dispersal limitation and homogenous dispersal
+
+#within Rittmann?
+assem_rit <- trans_nullmodel$new(volcsf_rit_m, filter_thres = 0.0005)
+assem_rit$cal_ses_betamntd(runs=500, abundance.weighted = TRUE)
+assem_rit$cal_rcbray(runs = 1000)
+assem_rit$cal_process(use_betamntd = TRUE)
+assem_f_rit <- assem_rit$res_process
+assem_f_rit$Site <- "Rittmann"
+
+#33% drift, dispersal limitation, homogenous dispersal
+
+assem_f_all <- rbind(assem_f, assem_fum_f, assem_nfum_f)
+assem_f_all[assem_f_all == "variable selection"] <- "selection, variable"
+assem_f_all[assem_f_all == "homogeneous selection"] <- "selection, homogeneous"
+assem_f_all[assem_f_all == "homogeneous dispersal"] <- "dispersal, homogeneous"
+
+plot_assem<- ggplot(assem_f_all, aes(x = process, y = percentage, fill = Site)) +
+  geom_bar(stat="identity", position="dodge") +
+  scale_fill_manual(values = c("#bd0026", "#ff7f00", "#fecc5c"),
+                    name = "Site type") +
+  labs(y = "Relative Contribution (%)") +
+  theme_bw() +
+  theme(
+    legend.text = element_text(size=10),
+    axis.text.x  = element_text(size=12),
+    axis.title.x = element_text(size=12),
+    axis.text.y  = element_text(size=12),
+    axis.title.y = element_blank(),
+    legend.position = "bottom") +
+  guides(fill = guide_legend(nrow = 2)) +
+  coord_flip()
+
+plot_assem
+```
+
+
+```{R distance decay}
+#distance decay relationship
+#chao index of similarity
+volcs.dist <- as.matrix(vegdist(otu_table(volcsf), method="chao"))
+volcs.dist
+
+#geographic distance between samples
+envdata <- read.csv("Env_data.csv") %>%
+  column_to_rownames(var = "Sample_Name")
+
+geo.dist <- envdata %>%
+  select(Latitude, Longitude)
+
+geo.dist2 <- as.data.frame(distm(geo.dist[, c(2, 1)], geo.dist[,c(2, 1)], 
+                                 fun = distVincentyEllipsoid))
+colnames(geo.dist2) <- rownames(geo.dist)
+rownames(geo.dist2) <- rownames(geo.dist)
+
+geo.dist2 <- as.matrix(geo.dist2)
+
+geo.dist3 <- reshape::melt(geo.dist2) %>%
+  dplyr::rename(geographic0 = "value") %>%
+  mutate(geographic = geographic0 / 1000)
+
+geo.dist3$geo.var <- paste(geo.dist3$X1, geo.dist3$X2, sep = "_")
+
+geo.dist4 <- geo.dist3 %>% arrange(., geo.var) %>%
+  select(-X1, -X2)
+
+
+volcs.dist2 <- reshape::melt(volcs.dist) %>%
+  dplyr::rename(dissimilarity = "value")
+volcs.dist2$variable <- paste(volcs.dist2$X1, volcs.dist2$X2, sep = "_")
+volcs.dist3 <- volcs.dist2 %>% arrange(., variable) %>%
+  select(-X1, -X2) %>%
+  mutate(., similarity = 1 - dissimilarity) %>%
+  select(-dissimilarity)
+
+diss.geo <- cbind(geo.dist4, volcs.dist3) %>%
+  select(-geo.var)
+
+diss.plot <- ggplot(diss.geo, aes(x = geographic, y = similarity)) +
+  geom_point() +
+  geom_smooth(method='lm', se=TRUE, color = "#ff7f00") +
+  theme_bw() +
+  theme(
+    text = element_text(size=12)) +
+  coord_cartesian(ylim = c(0, 1)) +
+  stat_cor(label.x.npc = "left", label.y.npc = "top", position = "jitter",
+           aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))+ 
+  stat_regline_equation(label.x.npc = "left", label.y.npc = "top") +
+  labs(x = "Geographic Distance (km)", y = "Similarity (1-Chao)")
+
+diss.plot
+
+```
+
+```{R distance decay}
+#distance decay relationship
+#chao index of similarity
+volcsf.a <- subset_samples(volcsf, Site_type == "Active")
+volcs.dist.a <- as.matrix(vegdist(otu_table(volcsf.a), method="chao"))
+volcs.dist.a
+
+#geographic distance between samples
+envdata.a <- read.csv("Env_data.csv") %>%
+  dplyr::filter(Site_type == "Active") %>%
+  column_to_rownames(var = "Sample_Name")
+
+geo.dist.a <- envdata.a %>%
+  select(Latitude, Longitude)
+
+geo.dist2.a <- as.data.frame(distm(geo.dist.a[, c(2, 1)], geo.dist.a[,c(2, 1)], 
+                                 fun = distVincentyEllipsoid))
+colnames(geo.dist2.a) <- rownames(geo.dist.a)
+rownames(geo.dist2.a) <- rownames(geo.dist.a)
+
+geo.dist2.a <- as.matrix(geo.dist2.a)
+
+geo.dist3.a <- reshape::melt(geo.dist2.a) %>%
+  dplyr::rename(geographic0 = "value") %>%
+  mutate(geographic = geographic0 / 1000)
+
+geo.dist3.a$geo.var <- paste(geo.dist3.a$X1, geo.dist3.a$X2, sep = "_")
+
+geo.dist4.a <- geo.dist3.a %>% arrange(., geo.var) %>%
+  select(-X1, -X2)
+
+
+volcs.dist2.a <- reshape::melt(volcs.dist.a) %>%
+  dplyr::rename(dissimilarity = "value")
+volcs.dist2.a$variable <- paste(volcs.dist2.a$X1, volcs.dist2.a$X2, sep = "_")
+volcs.dist3.a <- volcs.dist2.a %>% arrange(., variable) %>%
+  select(-X1, -X2) %>%
+  mutate(., similarity = 1 - dissimilarity) %>%
+  select(-dissimilarity)
+
+diss.geo.a <- cbind(geo.dist4.a, volcs.dist3.a) %>%
+  select(-geo.var)
+
+diss.plot.a <- ggplot(diss.geo.a, aes(x = geographic, y = similarity)) +
+  geom_point() +
+  geom_smooth(method='lm', se=TRUE, color = "#bd0026") +
+  theme_bw() +
+  theme(
+    text = element_text(size=12)) +
+  coord_cartesian(ylim = c(0, 1)) +
+  stat_cor(label.x.npc = "left", label.y.npc = "top", position = "jitter",
+           aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))+ 
+  stat_regline_equation(label.x.npc = "left", label.y.npc = "top") +
+  labs(x = "Geographic Distance (km)", y = "Similarity (1-Chao)")
+
+diss.plot.a
+
+```
+
+```{R distance decay}
+#distance decay relationship
+#chao index of similarity
+volcsf.p <- subset_samples(volcsf, Site_type == "Passive")
+volcs.dist.p <- as.matrix(vegdist(otu_table(volcsf.p), method="chao"))
+volcs.dist.p
+
+#geographic distance between samples
+envdata.p <- read.csv("Env_data.csv") %>%
+  dplyr::filter(Site_type == "Passive") %>%
+  column_to_rownames(var = "Sample_Name")
+
+geo.dist.p <- envdata.p %>%
+  select(Latitude, Longitude)
+
+geo.dist2.p <- as.data.frame(distm(geo.dist.p[, c(2, 1)], geo.dist.p[,c(2, 1)], 
+                                 fun = distVincentyEllipsoid))
+colnames(geo.dist2.p) <- rownames(geo.dist.p)
+rownames(geo.dist2.p) <- rownames(geo.dist.p)
+
+geo.dist2.p <- as.matrix(geo.dist2.p)
+
+geo.dist3.p <- reshape::melt(geo.dist2.p) %>%
+  dplyr::rename(geographic0 = "value") %>%
+  mutate(geographic = geographic0 / 1000)
+
+geo.dist3.p$geo.var <- paste(geo.dist3.p$X1, geo.dist3.p$X2, sep = "_")
+
+geo.dist4.p <- geo.dist3.p %>% arrange(., geo.var) %>%
+  select(-X1, -X2)
+
+
+volcs.dist2.p <- reshape::melt(volcs.dist.p) %>%
+  dplyr::rename(dissimilarity = "value")
+volcs.dist2.p$variable <- paste(volcs.dist2.p$X1, volcs.dist2.p$X2, sep = "_")
+volcs.dist3.p <- volcs.dist2.p %>% arrange(., variable) %>%
+  select(-X1, -X2) %>%
+  mutate(., similarity = 1 - dissimilarity) %>%
+  select(-dissimilarity)
+
+diss.geo.p <- cbind(geo.dist4.p, volcs.dist3.p) %>%
+  select(-geo.var)
+
+diss.plot.p <- ggplot(diss.geo.p, aes(x = geographic, y = similarity)) +
+  geom_point() +
+  geom_smooth(method='lm', se=TRUE, color = "#fecc5c") +
+  theme_bw() +
+  theme(
+    text = element_text(size=12)) +
+  coord_cartesian(ylim = c(0, 1)) +
+  stat_cor(label.x.npc = "left", label.y.npc = "top", position = "jitter",
+           aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))+ 
+  stat_regline_equation(label.x.npc = "left", label.y.npc = "top") +
+  labs(x = "Geographic Distance (km)", y = "Similarity (1-Chao)")
+
+diss.plot.p
+
+```
+
+
+```{r niche breadth}
+# exploring niche breadth
+#Get data frame sorted out
+volcsf_tab2 <- as.data.frame(otu_table(volcsf)) %>%
+  rownames_to_column(., var = "Sample") %>%
+  t(.) %>%
+  as.data.frame(.)
+
+#write.csv(volcsf_tab2, file = "otu_table_niche.csv")
+
+colnames(volcsf_tab2) <- volcsf_tab2[1,]
+volcsf_tab3 <- volcsf_tab2[-c(1), ]
+volcsf_tab4 <- mutate_all(volcsf_tab3, function(x) as.numeric(as.character(x)))
+volcsf_tab4[rowSums(volcsf_tab4[])>0,]
+
+volcsf_tab5 <- volcsf_tab4 %>%
+  rownames_to_column(., var = "ASV")
+
+volcsf_tab6.0 <- volcsf_tab5[ , c(1, 2, 4, 5, 7, 8, 9, 13, 22, 3, 6, 10, 11, 12, 21, 14, 15, 16, 17, 18, 19, 20)]
+
+#try doing niche breadth calculations with asv set that has ASVs removed that only appear in one sample
+asvs_ns <- read.csv("volcs_asvs_num_samples.csv") %>%
+  dplyr::select(ASV, count, reads)
+
+volcsf_tab6 <- dplyr::left_join(volcsf_tab6.0, asvs_ns, by = "ASV") %>%
+  dplyr::filter(count > 1) %>%
+  dplyr::select(-count, -reads) 
+
+nrow(volcsf_tab6) 
+nrow(volcsf_tab6.0) #down to 832 ASVs from 1878
+
+```
+
+```{r}
+
+#calculate niche breadth
+sampleinfo <- c(rep("TR",8), rep("WC", 6), rep("Mel", 4), rep("Ritt", 3))
+
+volcsf_tab6$ASV <- as.factor(volcsf_tab6$ASV)
+
+volcsf_bn <- levins.Bn(volcsf_tab6, 4, sampleinfo, q = 1.6)
+#look at distribution plot to find cutoff for generalists and specialists
+spec_cut <- 0.53
+gen_cut <- 0.96
+
+volcsf_bn_row <- nrow(volcsf_bn)
+
+volcsf_bnN <- volcsf_bn %>%
+  filter(., Below.LOQ == "N" & P.adj < 0.051) %>%
+  rownames_to_column(., var = "ASV")
+
+volcsf_bnN_row <- nrow(volcsf_bnN)
+volcsf_bnN_row
+
+#produces 328 ASVs that are above the LOQ
+
+volcsf_bn_row - volcsf_bnN_row
+
+volcsf_gen <- volcsf_bnN %>%
+  filter(., Bn > gen_cut)
+nrow(volcsf_gen)
+prop_gen <- (nrow(volcsf_gen))/(nrow(volcsf_bnN))
+prop_gen
+
+volcsf_spec <- volcsf_bnN %>%
+  filter(., Bn < spec_cut)
+nrow(volcsf_spec)
+prop_spec <- (nrow(volcsf_spec))/(nrow(volcsf_bnN))
+prop_spec
+#VAST majority are "specialists" according to this test, with 95%. None are above the cutoff for generalist
+
+nb_plot <- ggplot(volcsf_bnN, aes(x = Bn)) +
+  geom_histogram() +
+  theme_bw() +
+  labs(x = "Levin's Bn", y = "Frequency") +
+  theme(
+    text = element_text(size=12)) +
+  geom_vline(xintercept = spec_cut, linetype="dashed",
+             color = "red", size=0.7) +
+  geom_vline(xintercept = gen_cut, linetype="dashed",
+             color = "red", size=0.7)
+
+nb_plot
+#ggsave("niche_breadth_extra1.svg", plot = nb_plot, dpi = 300, width = 100, height = 100, units = "mm")
+```
+
+```{r}
+#calculate niche breadth on only high temp samples
+volcsf_tab6.t <- volcsf_tab6 %>%
+  dplyr::select("ASV", "TR2-64-1", "TR1-62-2", "TR1-52-2",
+                "TR1-42-2", "TR2-44-2",
+                "WC-50-2", "WC-40-2", "WC-35-2",
+                "Mel1-3", "Mel1M-2", "Mel2S-3", 
+                "Mel3S-1", "Ritt1-3", "Ritt3-3", "Ritt3M-3")
+
+sampleinfo2 <- c(rep("TR",5), rep("WC", 3), rep("Mel", 4), rep("Ritt", 3))
+
+volcsf_tab6.t$ASV <- as.factor(volcsf_tab6.t$ASV)
+
+volcsf_bn <- levins.Bn(volcsf_tab6.t, 4, sampleinfo2, q = 1.6)
+#look at distribution plot to find cutoff for generalists and specialists
+spec_cut <- 0.53
+gen_cut <- 0.96
+
+volcsf_bn_row <- nrow(volcsf_bn)
+
+volcsf_bnN <- volcsf_bn %>%
+  filter(., Below.LOQ == "N" & P.adj < 0.051) %>%
+  rownames_to_column(., var = "ASV")
+
+volcsf_bnN_row <- nrow(volcsf_bnN)
+volcsf_bnN_row
+
+#produces ~714 ASVs that are above the LOQ
+
+volcsf_bn_row - volcsf_bnN_row
+
+volcsf_gen <- volcsf_bnN %>%
+  filter(., Bn > gen_cut)
+nrow(volcsf_gen)
+prop_gen <- (nrow(volcsf_gen))/(nrow(volcsf_bnN))
+prop_gen
+
+volcsf_spec <- volcsf_bnN %>%
+  filter(., Bn < spec_cut)
+nrow(volcsf_spec)
+prop_spec <- (nrow(volcsf_spec))/(nrow(volcsf_bnN))
+prop_spec
+#VAST majority are "specialists" according to this test, with 96%. One is above the cutoff for generalist
+
+nb_plot_ht <- ggplot(volcsf_bnN, aes(x = Bn)) +
+  geom_histogram() +
+  theme_bw() +
+  labs(x = "Levin's Bn", y = "Frequency") +
+  theme(
+    text = element_text(size=12)) +
+  geom_vline(xintercept = spec_cut, linetype="dashed",
+             color = "red", size=0.7) +
+  geom_vline(xintercept = gen_cut, linetype="dashed",
+             color = "red", size=0.7)
+
+nb_plot_ht
+```
+
+
+```{r niche breadth temp}
+#trying Hulbert's Bn across gradients - temp or pH
+temp.grad <- c(64, 62, 44, 52, 42, 24, 32, 34, 10, 30, 50, 40, 35, 20, 52, 19, 52, 52, 69, 65, 65)
+pH.grad <- c(6.2, 4.4, 4.7, 4.7, 4.8, 4.5, 4, 5.8, 6.9, 7.6, 9.2, 8.9, 8.1, 7.4, 6.4, 5.8, 5.9, 6.3, 6.7, 6.1, 6)
+gwc.grad <- c(41.64, 44.82, 43.19, 63.52, 39.02, 49.83, 29.08, 42.33, 30.13, 19.21, 23.03, 24.26,
+              26.42, 35.88, 17.05, 29.14, 27.9, 30.03, 37.22, 50.07, 32.1)
+
+volcsf_temp <- hurlberts.Bn(volcsf_tab6, 4, sampleinfo, temp.grad, q = 1.6)
+#look at distribution plot to find cutoff for generalists and specialists
+spec_cut_temp <- 0.48
+gen_cut_temp <- 0.91
+
+
+volcsf_temp_row <- nrow(volcsf_temp)
+
+volcsf_tempN <- volcsf_temp %>%
+  filter(., Below.LOQ == "N" & P.adj < 0.051) %>%
+  rownames_to_column(., var = "ASV")
+
+par(mfrow = c(1, 3))
+hist(volcsf_tempN$Bn)
+boxplot(volcsf_tempN$Bn)
+qqnorm(volcsf_tempN$Bn)
+
+volcsf_tempN_row <- nrow(volcsf_tempN)
+volcsf_tempN_row
+
+#produces ~325 ASVs that are above the LOQ
+
+volcsf_temp_row - volcsf_tempN_row
+#losing 507 ASVs that are below LOQ  or non-significant
+
+volcsf_spec_temp <- volcsf_tempN %>%
+  filter(., Bn < spec_cut_temp)
+
+nrow(volcsf_spec_temp)
+prop_spec_temp <- (nrow(volcsf_spec_temp))/(nrow(volcsf_tempN))
+prop_spec_temp
+#VAST majority are "specialists" according to this test, with 95%
+
+volcsf_gen_temp <- volcsf_tempN %>%
+  filter(., Bn > gen_cut_temp)
+  
+nrow(volcsf_gen_temp)
+#two ASVs pass the Bn and p value test: ASV 5 and 42
+
+nb_plot_temp <- ggplot(volcsf_tempN, aes(x = Bn)) +
+  geom_histogram() +
+  theme_bw() +
+  labs(x = "Hulbert's Bn for Temperature", y = "Frequency") +
+  theme(
+    text = element_text(size=12)) +
+  geom_vline(xintercept = spec_cut_temp, linetype="dashed",
+             color = "red", size=0.7) +
+  geom_vline(xintercept = gen_cut_temp, linetype="dashed",
+             color = "red", size=0.7)
+
+nb_plot_temp
+
+```
+
+
+```{r niche breadth pH}
+volcsf_pH <- hurlberts.Bn(volcsf_tab6, 4, sampleinfo, pH.grad, q = 1.6)
+#look at distribution plot to find cutoff for generalists and specialists
+spec_cut_pH <- 0.41
+gen_cut_pH <- 0.9
+
+volcsf_pH_row <- nrow(volcsf_pH)
+
+volcsf_pHN <- volcsf_pH %>%
+  filter(., Below.LOQ == "N"& P.adj < 0.051) %>%
+  rownames_to_column(., var = "ASV")
+
+par(mfrow = c(1, 3))
+hist(volcsf_pHN$Bn)
+boxplot(volcsf_pHN$Bn)
+qqnorm(volcsf_pHN$Bn)
+
+volcsf_pHN_row <- nrow(volcsf_pHN)
+volcsf_pHN_row
+
+#produces ~292 ASVs that are above the LOQ
+
+volcsf_pH_row - volcsf_pHN_row
+#losing 540 ASVs that are below LOQ or non-significant
+
+volcsf_spec_pH <- volcsf_pHN %>%
+  filter(., Bn < spec_cut_pH)
+
+nrow(volcsf_spec_pH)
+prop_spec_pH <- (nrow(volcsf_spec_pH))/(nrow(volcsf_pHN))
+prop_spec_pH
+#VAST majority are "specialists" according to this test, with 73%
+
+volcsf_gen_pH <- volcsf_pHN %>%
+  filter(., Bn > gen_cut_pH)
+  
+nrow(volcsf_gen_pH)
+#Only 1 ASV passes the Bn and p value test for generalist: ASV 42
+
+nb_plot_pH <- ggplot(volcsf_pHN, aes(x = Bn)) +
+  geom_histogram() +
+  theme_bw() +
+  labs(x = "Hulbert's Bn for pH", y = "Frequency") +
+  theme(
+    text = element_text(size=12)) +
+  geom_vline(xintercept = spec_cut_pH, linetype="dashed",
+             color = "red", size=0.7) +
+  geom_vline(xintercept = gen_cut_pH, linetype="dashed",
+             color = "red", size=0.7)
+
+nb_plot_pH
+
+```
+
+```{r}
+#water content
+volcsf_gwc <- hurlberts.Bn(volcsf_tab6, 4, sampleinfo, gwc.grad, q = 1.6)
+#look at distribution plot to find cutoff for generalists and specialists
+spec_cut_gwc <- 0.38
+gen_cut_gwc <- 0.88
+
+
+volcsf_gwc_row <- nrow(volcsf_gwc)
+
+volcsf_gwcN <- volcsf_gwc %>%
+  filter(., Below.LOQ == "N" & P.adj < 0.051) %>%
+  rownames_to_column(., var = "ASV")
+
+par(mfrow = c(1, 3))
+hist(volcsf_gwcN$Bn)
+boxplot(volcsf_gwcN$Bn)
+qqnorm(volcsf_gwcN$Bn)
+
+volcsf_gwcN_row <- nrow(volcsf_gwcN)
+volcsf_gwcN_row
+
+#produces ~129 ASVs that are above the LOQ
+
+volcsf_gwc_row - volcsf_gwcN_row
+#losing 1749 ASVs that are below LOQ  or non-significant
+
+volcsf_spec_gwc <- volcsf_gwcN %>%
+  filter(., Bn < spec_cut_gwc)
+
+nrow(volcsf_spec_gwc)
+prop_spec_gwc <- (nrow(volcsf_spec_gwc))/(nrow(volcsf_gwcN))
+prop_spec_gwc
+#VAST majority are "specialists" according to this test, with 94%
+
+volcsf_gen_gwc <- volcsf_gwcN %>%
+  filter(., Bn > gen_cut_gwc)
+  
+nrow(volcsf_gen_gwc)
+#four ASVs pass the Bn and p value test: ASV 5, 42, 45, and 85
+
+nb_plot_gwc <- ggplot(volcsf_gwcN, aes(x = Bn)) +
+  geom_histogram() +
+  theme_bw() +
+  labs(x = "Hulbert's Bn for GWC", y = "Frequency") +
+  theme(
+    text = element_text(size=12)) +
+  geom_vline(xintercept = spec_cut_gwc, linetype="dashed",
+             color = "red", size=0.7) +
+  geom_vline(xintercept = gen_cut_gwc, linetype="dashed",
+             color = "red", size=0.7)
+
+nb_plot_gwc
+
+
+```
+
+
+```{r niche breadth with more samples}
+#Sort out new table
+volcsfext_tab2 <- read.csv("otu_table_niche_extra.csv") %>%
+  column_to_rownames(var = "X")
+
+colnames(volcsfext_tab2) <- volcsfext_tab2[1,]
+volcsfext_tab3 <- volcsfext_tab2[-c(1), ]
+
+volcsfext_tab4 <- mutate_all(volcsfext_tab3, function(x) as.integer(as.character(x)))
+volcsfext_tab4[rowSums(volcsfext_tab4[])>0,]
+
+volcsfext_tab5 <- volcsfext_tab4 %>%
+  rownames_to_column(., var = "ASV")
+
+volcsfext_tab6 <- volcsfext_tab5[ , c(1, 2:9, 
+                                      10:17, 
+                                      18:25,
+                                      26:33)]
+
+
+#calculate niche breadth
+sampleinfo <- c(rep("TR",8), rep("WC", 8), rep("Mel", 8), rep("Ritt", 8))
+
+volcsfext_tab6$ASV <- as.factor(volcsfext_tab6$ASV)
+
+volcsfext_bn <- levins.Bn(volcsfext_tab6, 4, sampleinfo, q = 1.6)
+#look at distribution plot to find cutoff for generalists and specialists
+spec_cut_ex <- 0.53
+gen_cut_ex <- 0.96
+
+volcsfext_bn_row <- nrow(volcsfext_bn)
+
+volcsfext_bnN <- volcsfext_bn %>%
+  filter(., Below.LOQ == "N" & P.val < 0.051) %>%
+  rownames_to_column(., var = "ASV")
+
+volcsfext_bnN
+
+volcsfext_bnN_row <- nrow(volcsfext_bnN)
+volcsfext_bnN_row
+
+#produces ~200 ASVs that are above the LOQ
+
+volcsfext_bn_row - volcsfext_bnN_row
+volcsfext_gen <- volcsfext_bnN %>%
+  filter(., Bn > gen_cut_ex)
+nrow(volcsfext_gen)
+prop_gen <- (nrow(volcsfext_gen))/(nrow(volcsfext_bnN))
+prop_gen
+
+
+volcsfext_spec <- volcsfext_bnN %>%
+  filter(., Bn < spec_cut_ex)
+nrow(volcsfext_spec)
+prop_spec <- (nrow(volcsfext_spec))/(nrow(volcsfext_bnN))
+prop_spec
+#VAST majority are "specialists" according to this test, with 94%. None are above the cutoff for generalist
+
+nb_extra_plot <- ggplot(volcsfext_bnN, aes(x = Bn)) +
+  geom_histogram() +
+  theme_bw() +
+  labs(x = "Levin's Bn", y = "Frequency") +
+  theme(
+    text = element_text(size=12)) +
+  geom_vline(xintercept = spec_cut_ex, linetype="dashed",
+             color = "red", size=0.7) +
+  geom_vline(xintercept = gen_cut_ex, linetype="dashed",
+             color = "red", size=0.7)
+
+nb_extra_plot
+
+```
+
+
+
+```{r final plot}
+assem.dd <- ggarrange(plot_assem, diss.plot,
+                      nrow = 1, ncol = 2,
+                      labels = c("D", "E"),
+                      widths = c(1, 0.7))
+
+assem.2 <- ggarrange(diss.plot.a, diss.plot.p,
+                      nrow = 1, ncol = 2,
+                      labels = c("F", "G"))
+
+assem.2
+
+niche.br <- ggarrange(nb_plot, nb_plot_temp, nb_plot_pH,
+                      nrow = 1, ncol = 3,
+                      labels = c("A", "B", "C"))
+
+com.final <- ggarrange(niche.br, assem.dd,
+                       assem.2,
+                       nrow = 3, ncol = 1,
+                       heights = c(0.7, 1, 1))
+
+
+com.final
+
+#saveRDS(nb_extra_plot, file = "nb_extra_plot")
+
+#ggsave("community_assembly.png", plot = com.final, dpi = 300, width = 200, height = 180, units = "mm")
+#ggsave("community_assembly.svg", plot = com.final, dpi = 300, width = 200, height = 180, units = "mm")
+```

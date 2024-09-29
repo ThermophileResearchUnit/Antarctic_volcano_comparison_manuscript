@@ -1,0 +1,594 @@
+---
+title: "Biological diversity_volcs"
+author: "Stephen Noell"
+date: "01/07/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("tidyverse")       # data wrangling and visualisation
+library("phyloseq")        # analysis of microbial communities
+library("vegan")           # ecological multivariate analyses
+library("microbiome") #for analyzing phyloseq objects
+library("viridis") #color package
+library("svglite") #for saving SVGs
+library("ggpubr") #for saving plots
+library("here")            # set the path to the folder
+library("ggplot2")
+library("ggVennDiagram")
+library(forcats)
+library(pairwiseAdonis)
+library("microeco")
+library("file2meco")
+library("agricolae")
+library("picante")
+library("NST")
+library(stringr)
+
+set.seed(57)
+```
+
+```{r}
+# Load the final phyloseq object, with contaminants removed and CLR abundance adjusted
+volcsf.clr <- readRDS("physeq.volcs.clr")
+
+#Load version of physeq object, with contaminants removed but not normalized, for alpha diversity analysis
+volcsf <- readRDS("physeq.volcs.cont")
+
+#Load version of physeq object, with contaminants removed and relative abundance normalized
+volcsfrel <- readRDS("physeq.volcs.rel")
+
+```
+
+
+```{R beta diversity}
+#Prepare data for PCoA plotting
+unifrac.volcsf.clr <- phyloseq::distance(volcsf.clr, method = "unifrac")
+volcsf.clr.mds <- ordinate(volcsf.clr, "MDS", distance = unifrac.volcsf.clr)
+
+# final plot
+pcoa.volcsf.clr<- plot_ordination(volcsf.clr, volcsf.clr.mds, 
+                color="Site", shape = "Site") +
+  geom_point(size=3) +
+  #geom_text(label = rownames(volcsf.clr.mds$vectors),
+   #         nudge_x = 0.01, nudge_y = 0.01, 
+    #        check_overlap = T) +
+  scale_color_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677")) +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text (size=11),
+    axis.text.x  = element_text(size=10),
+    axis.title.y = element_text(size=11),
+    axis.text.y  = element_text(size=10),
+    legend.text = element_text(size=10),
+    legend.title = element_text(size=10),
+    legend.position = "top") +
+  guides(color=guide_legend(nrow=2,byrow=TRUE))
+
+pcoa.volcsf.clr
+
+# Looks like WC and Mel are very similar! TR and Ritt separate
+```
+
+```{r alpha diversity}
+#inspect alpha diversity of samples
+my_comparisons <- list(c("Erebus - TR", "Erebus - WC"), c("Erebus - TR", "Melbourne"), 
+                       c("Erebus - TR", "Rittmann"), c("Erebus - WC", "Melbourne"),
+                       c("Erebus - WC", "Rittmann"), c("Melbourne","Rittmann"))
+
+shannon_plot <- plot_richness(volcsf, x="Site",  measures=c("Shannon"))  +
+  geom_boxplot(aes(fill = Site)) +
+  ylab("Shannon\nIndex") +
+  xlab("Transect") +
+  scale_fill_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677"),
+                      name = "Site") +
+  theme_bw() +
+  theme(
+    axis.title.x = element_blank (),
+    axis.text.x  = element_blank(),
+    axis.title.y = element_text(size=11),
+    axis.text.y  = element_text(size=10),
+    axis.ticks.x = element_blank(),
+    strip.text = element_blank(),
+    legend.position="top") +
+  stat_compare_means(comparisons = my_comparisons) +
+  stat_compare_means(label.x.npc = "center", label.y.npc = "bottom") +
+  guides(fill=guide_legend(nrow=2,byrow=TRUE))
+
+shannon_plot
+
+#Looks like Ritt has lowest alpha diversity
+```
+
+```{r PERMANOVA}
+
+# Now we will perform a PERMANOVA to see if these groups of sites have different centroids
+# This will be complemented with a Permutation test for homogeneity of multivariate dispersions 
+# -if this doesn't come back significant we can trust that the PERMANOVA results show
+#differences in data centroids and not in data dispersion
+
+# Create a data frame with the environmental data 
+envdata <-  read.csv("Env_data.csv", header = TRUE)
+envdata$Site <- factor(envdata$Site)
+unifrac.volcsf.clr.mat <- as.matrix(unifrac.volcsf.clr)
+
+# PERMANOVA on site
+adonis2(unifrac.volcsf.clr ~ Site, data = envdata)
+disp.site<- betadisper(unifrac.volcsf.clr, envdata$Site)
+permutest(disp.site)
+
+# We see that neither of them return significant results
+# Is the difference significant between all 4 sites? - check with pairwise PERMANOVA
+
+pairwise.adonis2(unifrac.volcsf.clr.mat ~ Site, data = envdata)
+
+# We see that TR and WC are different from each other (barely?), but none else
+
+```
+
+```{r community composition - 16S + metagenome reads}
+# Make community composition plot to see what's different between the sites
+#new colors
+pal_barn <- RColorBrewer::brewer.pal(10, "Paired")
+pal_barn2 <- RColorBrewer::brewer.pal(9, "BrBG")
+
+pal_barnf <- c("black", pal_barn, pal_barn2, "#bdbdbd")
+
+## Phylum abundance plot
+
+# Data for plotting
+volcs_p <- volcsfrel %>% psmelt() %>%
+  select(Sample, Phylum, Abundance)
+
+volcs_p["Phylum"][which(volcs_p$Abundance < 0.01), ] <- "Phyla < 1 %"
+#volcs_p["Phylum"][which(volcs_p$Phylum == "Crenarchaeota"), ] <- "Thaumarchaeota"
+volcs_p$Phylum[is.na(volcs_p$Phylum)] = "Unassigned"
+volcs_p$Method <- "16S"
+
+################## Metagenome read abundance using singleM
+
+meta.sm.qc <- read.csv("singlem_tax_profile_qcr_all4.csv", header = TRUE)
+
+meta.sm.qc[meta.sm.qc == ""] <- "Unassigned"
+
+#Phylum
+meta.sm.qc.phy <- meta.sm.qc %>%
+  dplyr::group_by(., Site, Phylum) %>%
+  dplyr::summarise(., Phy_sum = sum(coverage)) %>%
+  ungroup(.) %>%
+  dplyr::group_by(., Site) %>%
+  dplyr::mutate(., Abundance = Phy_sum / sum(Phy_sum)) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  select(., -Phy_sum) %>%
+  dplyr::rename(., Sample = "Site")
+
+meta.sm.qc.phy["Phylum"][which(meta.sm.qc.phy$Abundance < 0.01), ] <- "Phyla < 1 %"
+meta.sm.qc.phy["Phylum"][which(meta.sm.qc.phy$Phylum == "Thermoproteota"), ] <- "Crenarchaeota"
+meta.sm.qc.phy["Phylum"][which(meta.sm.qc.phy$Phylum == "Chloroflexota"), ] <- "Chloroflexi"
+meta.sm.qc.phy["Phylum"][which(meta.sm.qc.phy$Phylum == "CSP1-3"), ] <- "GAL15"
+meta.sm.qc.phy["Phylum"][which(meta.sm.qc.phy$Phylum == "Dormibacterota"), ] <- "Chloroflexi"
+meta.sm.qc.phy["Phylum"][which(meta.sm.qc.phy$Phylum == "Eremiobacterota"), ] <- "WPS-2"
+meta.sm.qc.phy$Method <- "Metagenome reads"
+
+volcs_p_both <- rbind(volcs_p, meta.sm.qc.phy)
+
+
+#Reorder phyla so <1% is first, then alphabetical
+list <- volcs_p_both$Phylum %>%
+  unique(.) %>%
+  as.data.frame(.) %>%
+  filter(., . != "Unassigned") %>%
+  filter(., . != "Phyla < 1 %") %>%
+  unlist(., use.names=FALSE) %>%
+  sort(.)
+
+x <- c("Phyla < 1 %", list, "Unassigned")
+
+volcs_p_both$Phylum <- factor(as.character(volcs_p_both$Phylum), levels=x)
+volcs_p_both <- volcs_p_both[order(volcs_p_both$Phylum),]
+
+# Plot 
+plot_phylum<- ggplot(volcs_p_both, aes(x = Sample, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity",
+           aes(x = factor(Sample, level = c("Ritt1-3", 'Ritt3-3', 'Ritt3M-3', 'TR1-32-2', 'TR1-42-2', 'TR1-52-2', 
+                                            'TR1-62-2', 'TR2-24-2', 'TR2-34-2', 'TR2-44-2', 'TR2-64-1', 'WC-10-1', 
+                                            'WC-20-2', 'WC-30-2', 'WC-35-2', 'WC-40-2', 'WC-50-2', 
+                                           'Mel1-3', 'Mel1M-2', 'Mel2S-3', 'Mel3S-1',
+                                            "Rittmann", "Erebus-TR", "Erebus-WC", "Melbourne")))) +
+  facet_grid(~ Method, scales = "free") +
+  scale_fill_manual(values = pal_barnf) +
+  labs(x = "Sample", y = "Relative\nAbundance") +
+  theme(
+    strip.text.x = element_text(size = 11),
+    legend.title = element_blank(),
+    legend.text = element_text(size=10),
+    axis.text.x  = element_text(size=11, angle = 90),
+    axis.title.x = element_text(size=11),
+    axis.text.y  = element_text(size=11),
+    axis.title.y = element_text(size=11),
+    legend.position = "bottom",
+    legend.key.width = unit(0.3, "cm"),
+    legend.key.height=unit(0.3,"cm")) +
+  coord_cartesian(expand = FALSE)
+
+plot_phylum
+
+# Looks like Ritt and TR have more Archaea, more Bacteroidetes at TR, more Acidobacteria at WC and Mel
+
+```
+
+
+
+
+```{r}
+# Use random forest to identify which taxa are important for distinguishing these sites
+
+#want to include ASV as a taxonomic rank?
+tax_table <- data.frame(tax_table(volcsf)) %>%
+  rownames_to_column(., var = "ASV_original") %>%
+  dplyr::mutate(., ASV = ASV_original) %>%
+  column_to_rownames(., var = "ASV_original")
+
+#transform phyloseq to microeco object
+volcsf_meco <- phyloseq2meco(volcsf)
+#volcsf_meco$tax_table <- tax_table
+volcsf_meco$tax_table <- tidy_taxonomy(volcsf_meco$tax_table)
+
+############## Run actual RF analysis
+
+t1 <- trans_diff$new(dataset = volcsf_meco, method = "rf", group = "Site", taxa_level = "all",
+                     filter_thres = 0.01) 
+
+# plot the MeanDecreaseGini bar
+# group_order is designed to sort the groups
+g1 <- t1$plot_diff_bar(use_number = 1:6, group_order = c("Erebus - TR", "Erebus - WC", "Melbourne", "Rittmann"), 
+                       color_values = c("#4477AA","#66CCEE","#CCBB44","#EE6677"))
+# plot the abundance using same taxa in g1
+g2 <- t1$plot_diff_abund(group_order = c("Erebus - TR", "Erebus - WC", "Melbourne", "Rittmann"), select_taxa = t1$plot_diff_bar_taxa,
+                         color_values = c("#4477AA","#66CCEE","#CCBB44","#EE6677"))
+# now the y axis in g1 and g2 is same, so we can merge them
+# remove g1 legend; remove g2 y axis text and ticks
+g1 <- g1 + theme(legend.position = "none",
+                 axis.title.x = element_text(size=12),
+                 axis.text.y = element_text(size=10))
+g2 <- g2 + theme(axis.text.y = element_blank(), 
+                 axis.ticks.y = element_blank(),
+                 axis.title.x = element_text(size=12))
+
+rf_taxa_plot <- ggarrange(g1, g2,
+                          ncol = 2,
+                          nrow = 1,
+                          widths = c(2, 1.4),
+                          common.legend = TRUE)
+
+rf_taxa_plot
+```
+
+
+```{r}
+###See what taxa are important for distinguishing Active vs. Passive sites
+
+envdata <-  read.csv("Env_data.csv", header = TRUE) %>%
+  column_to_rownames(., var = "Sample_Name")
+
+volcsf_meco$sample_table <- envdata #if you need to modify the envdata as I did
+volcsf_meco$tax_table <- tidy_taxonomy(volcsf_meco$tax_table)
+
+t2 <- trans_diff$new(dataset = volcsf_meco, method = "rf", group = "Site_type", taxa_level = "all",
+                     filter_thres = 0.02) 
+
+#Set taxa level to whatever you want; in my data set, none of the ASVs were significant at the ASV level.
+
+# plot the MeanDecreaseGini bar
+# group_order is designed to sort the groups
+g3 <- t2$plot_diff_bar(use_number = 1:8, group_order = c("Active", "Passive"), 
+                       color_values = c("#bd0026", "#fecc5c"))
+
+g4 <- t2$plot_diff_abund(group_order = c("Active", "Passive"), select_taxa = t2$plot_diff_bar_taxa,
+                         color_values = c("#bd0026", "#fecc5c"))
+# now the y axis in g1 and g2 is same, so we can merge them
+# remove g1 legend; remove g2 y axis text and ticks
+
+g4.2 <- g4 + theme(axis.title.x = element_text(size=9),
+                 axis.text.y = element_text(size=8))
+
+g3 <- g3 + theme(legend.position = "none",
+                 axis.title.x = element_text(size=12),
+                 axis.text.y = element_text(size=8))
+
+g4 <- g4 + theme(axis.text.y = element_blank(), 
+                 axis.ticks.y = element_blank(),
+                 axis.title.x = element_text(size=12))
+
+rf_taxa_plot_2 <- ggarrange(g3, g4,
+                          ncol = 2,
+                          nrow = 1,
+                          widths = c(2, 1.4),
+                          common.legend = TRUE)
+
+rf_taxa_plot_2
+
+#ggsave("rf_active_passive.png", plot = g4.2, dpi = 300, width = 100, height = 70, units = "mm")
+#Archaea, bacteroidetes at Active, acidobacteria, planctomycetes for Passive
+```
+
+
+```{r}
+#final plot
+
+alpha_beta <- ggarrange(shannon_plot, pcoa.volcsf.clr,
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+
+bio_div_plot <- ggarrange(alpha_beta, plot_phylum,
+                          rf_taxa_plot_2, rf_taxa_plot,
+                          labels = c("", "C", "D", "E"),
+                          ncol = 1, nrow = 4,
+                          heights = c(0.8, 1.1, 0.6, 0.6))
+
+bio_div_plot
+
+#ggsave("alpha_beta_barplot_rf.png", plot = bio_div_plot, dpi = 300, width = 240, height = 320, units = "mm")
+
+ggsave("alpha_beta_barplot_rf.svg", plot = bio_div_plot, dpi = 300, width = 240, height = 320, units = "mm")
+
+```
+
+
+
+```{r}
+# What percentage of reads can't be assigned to a phylum?
+volcs_na <- volcsf %>%
+  psmelt() %>%
+  filter(., is.na(Phylum))
+
+volcs_all <- volcsf %>%
+  psmelt()
+
+na_abund <- sum(volcs_na$Abundance)
+all_abund <- sum(volcs_all$Abundance)
+
+na_abund / all_abund
+
+volcs_na_cl <- volcsf %>%
+  psmelt() %>%
+  filter(., is.na(Class))
+
+na_abund_cl <- sum(volcs_na_cl$Abundance)
+all_abund <- sum(volcs_all$Abundance)
+
+na_abund_cl / all_abund
+
+volcs_na_or <- volcsf %>%
+  psmelt() %>%
+  filter(., is.na(Order))
+
+na_abund_or <- sum(volcs_na_or$Abundance)
+all_abund <- sum(volcs_all$Abundance)
+
+na_abund_or / all_abund
+
+volcs_na_gen <- volcsf %>%
+  psmelt() %>%
+  filter(., is.na(Genus))
+
+na_abund_gen <- sum(volcs_na_gen$Abundance)
+all_abund <- sum(volcs_all$Abundance)
+
+na_abund_gen / all_abund
+
+```
+
+
+```{r}
+#metagenome?
+meta_phy_na <- meta.sm.qc.phy %>%
+  filter(Phylum == "Unassigned") %>%
+  dplyr::summarise(., avg = mean(Abundance))
+
+meta_phy_na
+
+#class?
+meta_class <- meta.sm.qc %>%
+  dplyr::group_by(., Site, Class) %>%
+  dplyr::summarise(., Class_sum = sum(coverage)) %>%
+  ungroup(.) %>%
+  dplyr::group_by(., Site) %>%
+  mutate(., Abundance = Class_sum / sum(Class_sum)) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  select(., -Class_sum) %>%
+  dplyr::rename(., Sample = "Site")
+
+meta_class_na <- meta_class %>%
+  filter(Class == "Unassigned") %>%
+  dplyr::summarise(., avg = mean(Abundance))
+
+meta_class_na
+
+
+#order?
+meta_order <- meta.sm.qc %>%
+  dplyr::group_by(., Site, Order) %>%
+  dplyr::summarise(., Order_sum = sum(coverage)) %>%
+  ungroup(.) %>%
+  dplyr::group_by(., Site) %>%
+  mutate(., Abundance = Order_sum / sum(Order_sum)) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  select(., -Order_sum) %>%
+  dplyr::rename(., Sample = "Site")
+
+meta_order_na <- meta_order %>%
+  filter(Order == "Unassigned") %>%
+  dplyr::summarise(., avg = mean(Abundance))
+
+meta_order_na
+
+#family?
+meta_family <- meta.sm.qc %>%
+  dplyr::group_by(., Site, Family) %>%
+  dplyr::summarise(., Family_sum = sum(coverage)) %>%
+  ungroup(.) %>%
+  dplyr::group_by(., Site) %>%
+  mutate(., Abundance = Family_sum / sum(Family_sum)) %>%
+  ungroup(.) %>%
+  as.data.frame(.) %>%
+  select(., -Family_sum) %>%
+  dplyr::rename(., Sample = "Site")
+
+meta_family_na <- meta_family %>%
+  filter(Family == "Unassigned") %>%
+  dplyr::summarise(., avg = mean(Abundance))
+
+meta_family_na
+```
+
+```{r}
+#Look at the abundance profile of whatever ASVs you want to using heatmaps
+#Here, I used the below ASVs as an example to show the distribution of putative generalists/specialists
+volcs.heat <- volcsfrel %>%
+  psmelt()
+
+volcs.heat$Phylum[is.na(volcs.heat$Phylum)] = "Unassigned"
+volcs.heat$Genus[is.na(volcs.heat$Genus)] = ""
+
+volcs.heat.filt <- volcs.heat %>%
+  dplyr::filter(., OTU == "ASV_5" | OTU == "ASV_42" | OTU == "ASV_130" | OTU == "ASV_131")
+
+#ASV 130 is a specialist for temp; ASV 131 is spec for pH
+
+#volcs.heat.filt <- volcs.heat.filt %>%
+ # mutate(Abundance2 = log10(Abundance)) %>%
+  #select(-Abundance) %>%
+  #dplyr::rename(Abundance = Abundance2)
+
+volcs.heat.filt$Sample <- as.factor(volcs.heat.filt$Sample)
+
+volcs.heat.filt$ASV_Phylum = paste(
+  volcs.heat.filt$Phylum, 
+                                       #volcs.heat.filt$Class,
+                                   #volcs.heat.filt$Order, 
+                                   #volcs.heat.filt$Family,
+                                   volcs.heat.filt$Genus, 
+                                   volcs.heat.filt$OTU)
+
+heatmap_asv <- ggplot(volcs.heat.filt, aes(Sample, ASV_Phylum)) +
+  geom_tile(aes(fill = Abundance)) +
+  theme_bw() +
+  scale_fill_distiller('Relative\nabundance (%)', palette = "YlOrRd", direction = 1) +
+  ylab("ASV #") +
+  xlab("Sample") +
+  theme(
+    axis.title.x = element_text (size=10),
+    axis.text.x  = element_text(size=8),
+    axis.title.y = element_blank(),
+    axis.text.y  = element_text(size=8),
+    strip.text.x = element_text(size = 8),
+    legend.text = element_text(size=8),
+    legend.title = element_text(size=10),
+    legend.position = "bottom") +
+    scale_x_discrete(guide = guide_axis(angle = 90)) +
+  facet_grid(.~factor(Site), scales = "free",
+             space='free')
+
+heatmap_asv
+
+volcs.heat.filt2 <- volcs.heat.filt %>%
+  dplyr::filter(OTU == "ASV_5")
+
+volcs.heat.filt2$OTU <- gsub("ASV_5", "pH", volcs.heat.filt2$OTU)
+volcs.heat.filt2$Kingdom <- gsub("Bacteria", "Temperature", 
+                                 volcs.heat.filt2$Kingdom)
+  
+heatmap_pH <- ggplot(volcs.heat.filt2, aes(Sample, OTU)) +
+  geom_tile(aes(fill = pH)) +
+  theme_bw() +
+  scale_fill_distiller('pH', palette = "PiYG", direction = 1) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y  = element_text(size=10),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12))
+
+heatmap_pH
+
+heatmap_temp <- ggplot(volcs.heat.filt2, aes(Sample, Kingdom)) +
+  geom_tile(aes(fill = Temperature)) +
+  theme_bw() +
+  scale_fill_distiller('Temp (\u00B0C)', palette = "RdBu", direction = -1) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y  = element_text(size=10),
+    legend.text = element_text(size=12),
+    legend.title = element_text(size=12))
+
+heatmap_temp
+
+pp <- list(heatmap_temp, heatmap_pH, heatmap_asv)
+heatf <- cowplot::plot_grid(plotlist=pp, nrow = 3, align='v',
+                            rel_heights = c(0.3, 0.3, 1))
+heatf
+
+
+#Make scatter plots showing abundance varying with temp or pH
+volcs.heat.filt3 <- volcs.heat.filt %>%
+  dplyr::select(ASV_Phylum, Temperature, pH, Abundance, Site)
+
+
+scatter1 <- ggplot(volcs.heat.filt3, aes(y = Abundance, x = Temperature)) +
+  geom_point(size = 1.5) + 
+  labs(x = "Temp (\u00B0C)", y = "Abundance (%)") +
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(size = 10),
+    axis.text.x  = element_text(size = 8),
+    axis.title.y = element_text(size = 10),
+    axis.text.y  = element_text(size=8),
+    strip.text = element_text(size=8),
+    legend.position = "none") +
+  facet_wrap(~ ASV_Phylum, scales = "free",
+             labeller = labeller(ASV_Phylum = ~str_wrap(.x, width = 10)))
+
+scatter2 <- ggplot(volcs.heat.filt3, aes(y = Abundance, x = pH)) +
+  geom_point(size = 1.5) + 
+  theme_bw() +
+  labs(x = "pH", y = "Abundance (%)") +
+  theme(
+    axis.title.x = element_text(size = 10),
+    axis.text.x  = element_text(size = 8),
+    axis.title.y = element_text(size = 10),
+    axis.text.y  = element_text(size=8),
+    strip.text = element_text(size=8),
+    legend.position = "none") +
+  facet_wrap(~ ASV_Phylum, scales = "free",
+             labeller = labeller(ASV_Phylum = ~str_wrap(.x, width = 10)))
+
+#combined plot:
+scatters <- ggarrange(scatter1,  scatter2,
+                      ncol = 2)
+                      
+sc_heat <- ggarrange(scatters, heatmap_asv,
+                      nrow = 2)
+sc_heat
+
+#ggsave("gen_spec_ex.svg", plot = sc_heat, dpi = 300, width = 160, height = 130, units = "mm")
+#ggsave("gen_spec_ex.png", plot = sc_heat, dpi = 300, width = 160, height = 130, units = "mm")
+```

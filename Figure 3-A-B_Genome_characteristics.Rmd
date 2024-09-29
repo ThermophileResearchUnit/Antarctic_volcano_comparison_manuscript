@@ -1,0 +1,320 @@
+---
+title: "Biological diversity_volcs"
+author: "Stephen Noell"
+date: "01/07/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE, 
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.width = 10,
+                      fig.height = 6)
+```
+
+
+```{r Libraries and seed}
+
+# Libraries
+library("ggplot2")
+library("tidyverse")       # data wrangling and visualisation
+library("phyloseq")        # analysis of microbial communities
+library("vegan")           # ecological multivariate analyses
+library("microbiome") #for analyzing phyloseq objects
+library("viridis") #color package
+library("svglite") #for saving SVGs
+library("ggpubr") #for saving plots
+library("here")            # set the path to the folder
+library("ggVennDiagram")
+library(forcats)
+library(pairwiseAdonis)
+library(plyr)
+library("dplyr")
+library("stringr")
+library(gplots)
+library(reshape2)
+
+set.seed(57)
+```
+
+
+```{r MAGs}
+#load data
+mags.orig <- read.csv(file = "gtdb_checkm_abund_all4_nondedup.csv") %>%
+  select(bin, Site, Genome.size, GC, Coding.density) %>%
+  mutate(Genome.size.mbp = Genome.size / 1E6) %>%
+  select(-Genome.size)
+
+mags.gr <- read.csv(file = "bin_growth_rates_all5.csv") %>%
+  select(-1)
+
+mags.ogt <- read.csv(file = "tome_all5.csv")
+
+mags.2 <- inner_join(mags.orig, mags.gr) %>%
+  select(-gr_CI_low, -gr_CI_up)
+
+mags <- inner_join(mags.2, mags.ogt)
+
+#check for normal distribution of data
+ggplot(mags, aes(x = GC)) + geom_histogram()
+ggplot(mags, aes(x = Genome.size.mbp)) + geom_histogram()
+ggplot(mags, aes(x = Coding.density)) + geom_histogram()
+ggplot(mags, aes(x = growth_rate)) + geom_histogram()
+ggplot(mags, aes(x = predOGT)) + geom_histogram()
+
+#Look like none are normally distributed, using Wilcox instead
+
+my_comparisons <- list(c("Erebus-TR", "Erebus-WC"), c("Erebus-TR", "Melbourne"), 
+                       c("Erebus-TR", "Rittmann"), c("Erebus-WC", "Melbourne"),
+                       c("Erebus-WC", "Rittmann"), c("Melbourne","Rittmann"))
+
+mags.0 <- mags %>%
+  dplyr::mutate(Site_type = case_when(
+      str_detect(Site, "Erebus-TR") ~ "Active",
+      str_detect(Site, "Erebus-WC") ~ "Passive",
+      str_detect(Site, "Rittmann") ~ "Active",
+      str_detect(Site, "Melbourne") ~ "Passive")) %>%
+  reshape2::melt(.)
+
+site.gchar <- ggplot(mags.0, aes(x = Site, y = value, fill = Site)) +
+  geom_boxplot() +
+  #geom_jitter(size = 0.7) +
+  theme_bw() +
+  scale_fill_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677"),
+                      name = "Site") +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding\ndensity (%)", 
+                                      Genome.size.mbp = "Genome size\n(Mbp)",
+                                      growth_rate = "Predicted Max\nGrowth rate (d)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=12),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside"
+  ) +
+  ggpubr::stat_anova_test(method = "one_way",
+                          label.x.npc = "left", label.y.npc = "bottom") 
+  #stat_compare_means(comparisons = my_comparisons)
+
+#significant difference in genome size between active and passive sites  
+
+site.gchar
+
+#filter into significant and non-significant
+mags.0.sig <- mags.0 %>%
+  dplyr::filter(variable == "Genome.size.mbp" | variable == "predOGT")
+
+mags.0.nsig <- mags.0 %>%
+  dplyr::filter(variable != "Genome.size.mbp" & variable != "predOGT")
+
+#final plot, significant ones
+site.gchar.sig <- ggplot(mags.0.sig, aes(x = Site, y = value, color = Site)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677"),
+                      name = "Site") +
+   facet_wrap(. ~ variable, nrow = 2, ncol = 1,
+              scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(Genome.size.mbp = "Genome size\n(Mbp)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=10),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    legend.position = "none"
+  ) +
+  ggpubr::stat_anova_test(method = "one_way",
+                          label.x.npc = "centre", label.y.npc = "bottom",
+                             size = 3) +
+  stat_compare_means(comparisons = my_comparisons, size=2)
+
+site.gchar.sig
+
+
+###Final plot, non-significant ones
+
+site.gchar.nsig <- ggplot(mags.0.nsig, aes(x = Site, y = value, fill = Site)) +
+  geom_boxplot() +
+  #geom_jitter(size = 0.7) +
+  theme_bw() +
+  scale_fill_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677"),
+                      name = "Site") +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding\ndensity (%)", 
+                                      growth_rate = "Predicted Max\nGrowth rate (d)"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=12),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside"
+  ) +
+  ggpubr::stat_anova_test(method = "one_way",
+                          label.x.npc = "left", label.y.npc = "bottom")  
+  #stat_compare_means(comparisons = my_comparisons)
+
+site.gchar.nsig
+
+```
+
+
+```{r}
+
+########### Active vs Passive
+site.type.gchar <- ggplot(mags.0, aes(x = Site_type, y = value, fill = Site_type)) +
+  geom_boxplot() +
+  #geom_jitter(size = 0.7) +
+  theme_bw() +
+  scale_fill_manual(values=c("#bd0026", "#fecc5c"),
+                      name = "Site type") +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding\ndensity (%)", 
+                                      Genome.size.mbp = "Genome size\n(Mbp)",
+                                      growth_rate = "Predicted Max\nGrowth rate (d)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=12),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside"
+  ) +
+  ggpubr::stat_compare_means(method = "wilcox", 
+                             aes(label = paste0("p =", ..p.format..)),
+                             label.x.npc = "left", label.y.npc = "bottom")
+
+site.type.gchar
+
+#final plot, only significant ones:
+site.type.gchar.sig <- ggplot(mags.0.sig, aes(x = Site_type, y = value, color = Site_type)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.5) +
+  theme_bw() +
+  scale_color_manual(values=c("#bd0026", "#fecc5c"),
+                      name = "Site type") +
+   facet_wrap(. ~ variable, nrow = 2, ncol = 1,
+              scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(Genome.size.mbp = "Genome size\n(Mbp)",
+                                      predOGT = "Predicted\nOGT (\u00b0C)"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=10),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    legend.position = "none"
+  ) +
+  ggpubr::stat_compare_means(method = "wilcox", 
+                             aes(label = paste0("p =", ..p.format..)),
+                             label.x.npc = "centre", label.y.npc = "bottom",
+                             size = 3)
+
+site.type.gchar.sig
+
+#Final plot, non-significant ones:
+site.type.gchar.nsig <- ggplot(mags.0.nsig, aes(x = Site_type, y = value, fill = Site_type)) +
+  geom_boxplot() +
+  #geom_jitter(size = 0.7) +
+  theme_bw() +
+  scale_fill_manual(values=c("#bd0026", "#fecc5c"),
+                      name = "Site type") +
+   facet_wrap(. ~ variable, scales = "free_y",
+             strip.position = "left",
+             labeller = as_labeller(c(GC = "GC (%)", 
+                                      Coding.density = "Coding\ndensity (%)", 
+                                      growth_rate = "Predicted Max\nGrowth rate (d)"))) +
+  ylab(NULL) +
+  theme(
+    text = element_text(size=12),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    strip.background = element_blank(),
+    strip.placement = "outside"
+  ) +
+  ggpubr::stat_compare_means(method = "wilcox", 
+                             aes(label = paste0("p =", ..p.format..)),
+                             label.x.npc = "left", label.y.npc = "bottom")
+
+site.type.gchar.nsig
+```
+
+
+```{r}
+#compare OGT of RittMat to Rittmann
+ritt.ogt <- mags.ogt %>%
+  dplyr::filter(., Site == "Rittmann" | Site == "RittMat")
+
+ritt.ogt.plot <- ggplot(ritt.ogt, aes(x = Site, y = predOGT, fill = Site)) +
+  geom_boxplot() +
+  #geom_jitter(size = 0.7) +
+  theme_bw() +
+  scale_fill_manual(values=c("#EE6677", "#f9d1d6"),
+                      name = "Site") +
+  ylab("Predicted\nOGT (\u00b0C)") +
+  theme(
+    text = element_text(size=11),
+    axis.text.x = element_text(angle = 90),
+    axis.title.x = element_blank(),
+    legend.position = "bottom"
+  ) +
+  guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
+  ggpubr::stat_compare_means(method = "wilcox", 
+                             aes(label = paste0("p =", ..p.format..)),
+                             label.x.npc = "left", label.y.npc = "bottom")
+
+ritt.ogt.plot
+```
+
+
+```{r}
+#Final plot
+#sig only
+gchar.sites.sig <- ggarrange(site.type.gchar.sig, site.gchar.sig,
+                          nrow = 1, ncol = 2,
+                          widths = c(0.7, 1),
+                          labels = c("A", "B"))
+gchar.sites.sig
+
+#ggsave("Genome_char_site.svg", gchar.sites.sig, width = 200, height = 80, units = "mm",dpi = 300)
+#ggsave("Genome_char_site.png", gchar.sites.sig, width = 200, height = 80, units = "mm",dpi = 300)
+
+```
+
+
+```{r}
+#nonsig only
+gchar.sites.nsig.0 <- ggarrange(site.type.gchar.nsig, ritt.ogt.plot,
+                          nrow = 1, ncol = 2,
+                          widths = c(0.8, 0.2),
+                          labels = c("A", "C"))
+
+gchar.sites.nsig <- ggarrange(gchar.sites.nsig.0, site.gchar.nsig,
+                          nrow = 2, ncol = 1,
+                          heights = c(0.8, 1),
+                          labels = c("", "B"))
+
+gchar.sites.nsig
+
+#ggsave("gchar_nsig_matogt.png", gchar.sites.nsig, width = 250, height = 150, units = "mm",dpi = 300)
+
+```
