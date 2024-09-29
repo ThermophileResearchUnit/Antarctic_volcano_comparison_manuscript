@@ -1,0 +1,266 @@
+---
+title: "Antarctic_geothermal_functional_potentials"
+author: "Jaber Abbaszadeh"
+date: "2023-02-21"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(stringr)
+library(vegan)
+library(ggplotify)
+library(knitr)
+library(pheatmap)      
+library(reshape2)
+library(preprocessCore)
+library(RColorBrewer)
+library(stringr)
+library(grid)
+library(gridExtra)
+library(scales)
+library(svglite)
+```
+
+This script is developed to analyse functional annotation data from metagenomic sequence of four Antarctic geotermal soil samples. It uses Greening lab metabolic marker genes database (https://doi.org/10.26180/c.5230745) to calculate presence absence and abundance of metabolic pathways in the metagenomic sequenc of 4 geothermal soil samples in Antarctica
+
+Inputs to the script:
+ - DIAMOND output : DATA/output_diamond
+ - Details of marker genes DATA/list_genes.csv
+ - coverM outputs1: Analyzed and calculated RPKM for metabolic markers (for each sample)
+ - coverM outputs2: RPKM of 14 ribosomal marker genes used in SingleM as normalization method
+ 
+ NOTE: For access to the raw data for running this script, please contact the first author of the manuscript, Stephen Noell stephen.noell@waikato.ac.nz
+
+
+```{r}
+# Get the current directory
+current_directory <- getwd()
+setwd(current_directory)
+# Define the relative path within the current directory
+# Create the full path using file.path()
+path.rpkm <- file.path(current_directory, "DATA//")
+# #Read in melbourne rpkm
+rpkm.mel=read_tsv(file.path(path.rpkm,"output_coverm_rpkm_Mel.tsv") ) %>% 
+   rename("contig" = "Contig", "rpkm" ="Mel3S-1_contigs.genes.fna/Mel3S-1_1.fastq RPKM")
+
+rpkm.ritt <- read_tsv(file.path(path.rpkm,"output_coverm_rpkm_Ritt3-1.tsv") ) %>%
+  rename("contig" = "Contig", "rpkm" ="Ritt3-1_contigs.genes.fna/Ritt3-1_1.fastq RPKM")
+
+rpkm.WC <- read_tsv(file.path(path.rpkm,"output_coverm_rpkm_WC.tsv") ) %>%
+  rename("contig" = "Contig", "rpkm" ="WC-50_contigs.genes.fna/WC-50_1.fastq RPKM")
+
+rpkm.TR <- read_tsv(file.path(path.rpkm,"output_coverm_rpkm_TR.tsv") ) %>%
+  rename("contig" = "Contig", "rpkm" ="TR_contigs.genes.fna/TR_1.fastq RPKM")
+
+all_rpkm <- rbind(rpkm.mel,rpkm.ritt,rpkm.WC, rpkm.TR )
+
+#I think there was a problem with reading the concatenated file and it drops one site
+#all_rpkm <- read_tsv(file.path(path.rpkm,"calculated_rpkm_all.tsv"), col_names = c("contig", "rpkm") ) 
+
+
+folder_path = paste0(path.rpkm , "output_diamond")
+# define the folder path
+file_descriptions <- read_csv(file.path(path.rpkm, "list_genes.csv"))
+
+# create an empty list to store dataframes for each file
+all_dfs <- list()
+# Function to read and concatenate data from all ".out" files in a folder
+# Usage: four_site_metag <- read_files(folder_path)
+read_files <- function(folder_path) {
+  all_dfs <- list()
+  for (filename in list.files(folder_path, recursive = TRUE)) {
+    if (endsWith(filename, ".out")) {
+      # get the full file path
+      file_path <- file.path(folder_path, filename)
+
+      # read the data into a data frame
+      genes <- list()
+      con <- file(file_path, "r")
+      while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
+        cols <- strsplit(line, split = "\t")[[1]]
+        node <- paste0("NODE_", strsplit(cols[1], split = "_")[[1]][2])
+        loc <- strsplit(basename(filename), split = "_")[[1]][1]
+        identity <- cols[3]
+        #ids <- paste0("ID_", tail(strsplit(cols[1], split = "")[[1]], 2, sep = ""))
+        ids <- cols[1]
+        ref <- cols[2]
+        length_aln <- cols[4]
+        len_seq <- cols[9]
+        evalue <- cols[12]
+        bitscore <- cols[13]
+        genes <- c(genes, list(data.frame(filename = basename(filename), location = loc, 
+                                           contig = paste(ids, collapse = "_"), ref = ref, 
+                                           percent_identity = identity, len_alingnment = length_aln, 
+                                           len_seq = len_seq, evalue = evalue, bitscore = bitscore)))
+      }
+      close(con)
+
+      df <- do.call(rbind, genes)
+
+      # add the dataframe to the list
+      all_dfs <- c(all_dfs, list(df))
+    }
+  }
+
+  # concatenate all dataframes in the list
+  final_df <- bind_rows(all_dfs)
+  return(final_df)
+}
+
+# Example usage
+four_site_m <- read_files(folder_path)
+
+four_site_metag = left_join(four_site_m,all_rpkm)
+
+# save the final dataframe to a csv file
+#write.csv(result, file = "output/result.csv", row.names = FALSE)
+
+length(four_site_metag[is.na(four_site_metag)])
+four_site_metag_rpkm <- drop_na(four_site_metag)
+
+
+
+# merge file_descriptions and four_site_metag dataframes and remove 'filename' column. genes belonging to  group 4 NiFe hydrogenase, must have cutoff 60 percent identity
+four_site_merge <- left_join(file_descriptions, four_site_metag_rpkm) %>% 
+  select(-filename) %>% 
+  mutate(hydrogenase_type = ifelse(str_detect(ref, "\\[NiFe\\]"), str_extract(ref, "(?<=-)[^-]+$"), "")) %>% 
+  mutate(Metabolism2 = ifelse(Metabolism == "Hydrogen oxidation", hydrogenase_type, Metabolism2)) %>% 
+  mutate(cutoff = ifelse(grepl("\\[NiFe\\] Group 4", ref), 60, cutoff)) 
+
+
+# remove sequences with percent identity below the specified cutoff in the bioRxiv article (Greening et al. 2022) 
+four_site_filt <- subset(four_site_merge, percent_identity >= cutoff)   
+length(unique(four_site_filt$gene))
+
+metagenome <-  four_site_filt %>% 
+  select(location,full_gene_name, gene, Metabolism, Metabolism2,hydrogenase_type, rpkm) %>% 
+  group_by(location, gene, Metabolism,Metabolism2,hydrogenase_type, full_gene_name) %>%
+  summarize(total_rpkm = sum(rpkm))
+
+
+mel_rpkm_singleM <- read_tsv(file.path(path.rpkm,"all_mel_singleM.tsv"), col_names = c("contig", "rpkm") )
+rit_rpkm_singleM <- read_tsv(file.path(path.rpkm,"all_rit_singleM.tsv"), col_names = c("contig", "rpkm") ) 
+tr_rpkm_singleM <- read_tsv(file.path(path.rpkm,"all_tr_singleM.tsv"), col_names = c("contig", "rpkm") ) 
+wc_rpkm_singleM <- read_tsv(file.path(path.rpkm,"all_wc_singleM.tsv"), col_names = c("contig", "rpkm") ) 
+
+
+
+mean_mel_rpkm_singleM <- mean(mel_rpkm_singleM$rpkm)
+mean_rit_rpkm_singleM <- mean(rit_rpkm_singleM$rpkm)
+mean_tr_rpkm_singleM <- mean(tr_rpkm_singleM$rpkm)
+mean_wc_rpkm_singleM <- mean(wc_rpkm_singleM$rpkm)
+
+
+#add rpkm 14 unversal genes from singleM:
+metagenome <- metagenome %>% mutate(mean_rpkm = ifelse(location == "Mel3S", mean_mel_rpkm_singleM,
+                                         ifelse(location == "Ritt3", mean_rit_rpkm_singleM,
+                                                ifelse(location == "TR", mean_tr_rpkm_singleM,
+                                                       ifelse(location == "WC", mean_wc_rpkm_singleM, NA)))))
+
+
+
+normal_metagenome0 <-  metagenome %>% 
+  mutate(norm= total_rpkm/mean_rpkm)
+
+#rescale calculates normalized value in percentage 
+
+normal_metagenome <- normal_metagenome0 %>%
+  dplyr::group_by(location) %>%
+  dplyr::mutate(normalized = rescale(norm, to = c(0,100))) %>%
+  ungroup(.) %>%
+  as.data.frame(.)
+
+#rename the site names 
+normal_metagenome <- normal_metagenome %>% 
+  mutate(location = recode(location, "Mel3S" = "Melbourne", "Ritt3" = "Rittmann", "TR" = "Erebus-TR", "WC" = "Erebus-WC")) %>% 
+  filter(normalized >0.099)
+location_order <- c( "Erebus-TR",  "Erebus-WC" , "Melbourne","Rittmann" )
+
+# Convert the 'location' variable to a factor with the desired order
+normal_metagenome$location <- factor(normal_metagenome$location, levels = location_order)
+
+normal_metagenome <- normal_metagenome %>% 
+  mutate(full_gene_name= if_else(full_gene_name == "NiFe hydrogenase", hydrogenase_type, full_gene_name ))
+
+
+normal_metagenome_hyd <- normal_metagenome %>% 
+  mutate(full_gene_name = if_else(full_gene_name == "NiFe hydrogenase", hydrogenase_type, full_gene_name)) %>% 
+  mutate(gene = if_else(gene == "NiFe_hydrogenase", hydrogenase_type, gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 1h"), "[NiFe]-1h", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 1f"), "[NiFe]-1f", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 1l"), "[NiFe]-1l", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 2a"), "[NiFe]-2a", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 3b"), "[NiFe]-3b", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 3c"), "[NiFe]-3c", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 3d"), "[NiFe]-3d", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 4f"), "[NiFe]-4f", gene)) %>% 
+  mutate(gene = if_else(str_detect(gene, "\\[NiFe\\] Group 4g"), "[NiFe]-4g", gene)) 
+  
+  
+```
+
+
+Final version of heatmap
+```{r}
+setwd(current_directory)
+
+breaks <- c(0,0.01,1,10,100)
+myPalette <- colorRampPalette(brewer.pal(9, "Reds"), space = "rgb")
+myPalette2 <- colorRampPalette(rev(brewer.pal(11, "Spectral")), space = "rgb")
+myPalette3 <- colorRampPalette(brewer.pal(100, "Spectral"), space = "rgb")
+
+
+# Generate a palette with the specified colors
+
+
+My_Theme <-theme(
+    axis.text.x = element_text(size = 12, angle = 90, vjust = 0.5, hjust = 1),
+    axis.text.y = element_text(size = 12, hjust = 1),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = c(-0.3,-0.15),
+    legend.direction = "horizontal",
+    legend.title = element_text( size = 12, vjust = 0.8),
+    legend.text = element_text(size = 10),
+    legend.key.width = unit(1, "cm"),  # Adjust the width of legend keys
+    legend.key.height = unit(0.5, "cm"),  # Adjust the height of legend keys
+    legend.spacing.x = unit(0.5, "cm"),  # Adjust the horizontal spacing between legend items
+    legend.justification = "center",  # Align the legend horizontally
+    legend.title.align = 0,  # Adjust the alignment of the legend title
+    #legend.title = element_text(size = 12, vjust = 0.5),
+    #legend.text = element_text(size = 10, hjust = 0),
+    strip.background = element_rect(fill = "#f2f2f2", colour = "white"),
+    strip.text = element_text(size = 4,face = "bold", hjust = 0),
+    strip.placement = "outside",
+    strip.text.y = element_text(size = 14, angle = 0, hjust = 0, vjust = 0.5),
+    #strip.text.y = element_text(angle = 0, size = 8),
+    plot.title = element_text(size = 1, face = "bold", hjust = 5),
+    plot.background = element_rect(color = "black", fill = "transparent", size = 1),
+    plot.margin = margin(10, 10, 100, 10),  # Adjust the bottom margin to make space for the legend
+    axis.title = element_text(face = "bold"),
+    axis.title.x = element_text(vjust = -10),
+    panel.spacing = unit(1, "mm"),
+    panel.background = element_rect(fill = "white", colour = "white"),
+    #panel.border = element_rect(fill = NA, color = "black", size = 1)
+  ) 
+# Create the heatmap using ggplot2
+#plot_metagenome <- ggplot(normal_metagenome, aes(x = location, y = paste(Metabolism,gene, sep = " | "), fill = normalized)) + 
+
+plot_metagenome <- ggplot(normal_metagenome_hyd, aes(x = location, y = paste(full_gene_name, gene, sep= "     " ), fill = normalized)) + 
+  geom_tile(color = "white", size = 2.3) + 
+  scale_fill_gradientn(colors = c("white", "#ca0020", "#2166ac"),
+    name = "Estimated\nabundance\nin community (%)",
+    na.value = "white"
+  ) +
+  facet_grid(Metabolism ~ ., scales = "free", space = "free", shrink = FALSE, as.table = TRUE) +
+  My_Theme + 
+  labs(title = "Metagenome Heatmap", x = "Location", y = "Pathway, Gene") 
+
+ggsave("Metagenome_Func_Analysis_Final.svg", plot_metagenome, width = 300, height = 350, units = "mm",dpi = 300)
+
+```
