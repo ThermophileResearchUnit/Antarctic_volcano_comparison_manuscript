@@ -66,9 +66,19 @@ ggplot(mags, aes(x = predOGT)) + geom_histogram()
 
 #Look like none are normally distributed, using Wilcox instead
 
-my_comparisons <- list(c("Erebus-TR", "Erebus-WC"), c("Erebus-TR", "Melbourne"), 
-                       c("Erebus-TR", "Rittmann"), c("Erebus-WC", "Melbourne"),
-                       c("Erebus-WC", "Rittmann"), c("Melbourne","Rittmann"))
+my_comparisons <- list(c("Erebus-TR", "Erebus-WC"), 
+                       c("Erebus-TR", "Melbourne"), 
+                       c("Erebus-TR", "Rittmann"), 
+                       c("Erebus-WC", "Melbourne"),
+                       c("Erebus-WC", "Rittmann"),
+                       c("Melbourne","Rittmann"))
+
+my_comparisons2 <- list(c("Active-Erebus-TR", "Active-Rittmann"),
+                      c("Active-Erebus-TR", "Passive-Erebus-WC"), 
+                       c("Active-Erebus-TR", "Passive-Melbourne"), 
+                      c("Passive-Erebus-WC", "Active-Rittmann"),
+                      c("Passive-Melbourne","Active-Rittmann"),
+                      c("Passive-Erebus-WC", "Passive-Melbourne"))
 
 mags.0 <- mags %>%
   dplyr::mutate(Site_type = case_when(
@@ -77,6 +87,20 @@ mags.0 <- mags %>%
       str_detect(Site, "Rittmann") ~ "Active",
       str_detect(Site, "Melbourne") ~ "Passive")) %>%
   reshape2::melt(.)
+
+mags.00 <- mags %>%
+  dplyr::mutate(Site_type = case_when(
+      str_detect(Site, "Erebus-TR") ~ "Active",
+      str_detect(Site, "Erebus-WC") ~ "Passive",
+      str_detect(Site, "Rittmann") ~ "Active",
+      str_detect(Site, "Melbourne") ~ "Passive")) %>%
+  dplyr::mutate(across(Site, ~ str_replace_all(., 
+    c("Erebus-TR" = "Active-Erebus-TR",
+      "Erebus-WC" = "Passive-Erebus-WC",
+      "Rittmann" = "Active-Rittmann",
+      "Melbourne" = "Passive-Melbourne"
+    )))) %>%
+  reshape2::melt(., c("bin", "Site", "Site_type"))
 
 site.gchar <- ggplot(mags.0, aes(x = Site, y = value, fill = Site)) +
   geom_boxplot() +
@@ -108,7 +132,7 @@ site.gchar <- ggplot(mags.0, aes(x = Site, y = value, fill = Site)) +
 site.gchar
 
 #filter into significant and non-significant
-mags.0.sig <- mags.0 %>%
+mags.0.sig <- mags.00 %>%
   dplyr::filter(variable == "Genome.size.mbp" | variable == "predOGT")
 
 mags.0.nsig <- mags.0 %>%
@@ -119,7 +143,7 @@ site.gchar.sig <- ggplot(mags.0.sig, aes(x = Site, y = value, color = Site)) +
   geom_boxplot() +
   geom_jitter(size = 2, alpha = 0.5) +
   theme_bw() +
-  scale_color_manual(values=c("#4477AA", "#66CCEE", "#CCBB44", "#EE6677"),
+  scale_color_manual(values=c("#4477AA", "#EE6677", "#66CCEE", "#CCBB44"),
                       name = "Site") +
    facet_wrap(. ~ variable, nrow = 2, ncol = 1,
               scales = "free_y",
@@ -138,7 +162,7 @@ site.gchar.sig <- ggplot(mags.0.sig, aes(x = Site, y = value, color = Site)) +
   ggpubr::stat_anova_test(method = "one_way",
                           label.x.npc = "centre", label.y.npc = "bottom",
                              size = 3) +
-  stat_compare_means(comparisons = my_comparisons, size=2)
+  stat_compare_means(comparisons = my_comparisons2, size=2)
 
 site.gchar.sig
 
